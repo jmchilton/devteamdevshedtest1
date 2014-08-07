@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="rpy" version="1.0.3">
+      <repository changeset_revision="c0eb80864491" name="package_rpy_1_0_3" owner="devteam" toolshed="https://testtoolshed.g2.bx.psu.edu" />
+    </package>
+    <package name="R" version="2.11.0">
+      <repository changeset_revision="497dd02b0fe2" name="package_r_2_11_0" owner="devteam" toolshed="https://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
