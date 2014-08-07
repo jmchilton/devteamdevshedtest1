@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="MINE" version="1.0.1">
+      <repository changeset_revision="13775004e78a" name="package_mine_1_0_1" owner="devteam" toolshed="https://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
