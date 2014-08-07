@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="cgatools" version="1.6">
+    <install version="1.0">
+      <actions>
+        <action type="download_by_url">http://sourceforge.net/projects/cgatools/files/1.6.0/cgatools-1.6.0.43-MacOSX_binary-x86_64.tar.gz</action>
+        <action type="move_directory_files">
+          <source_directory>cgatools-1.6.0.43-MacOSX_binary-x86_64/bin</source_directory>
+          <destination_directory>$INSTALL_DIR/bin</destination_directory>
+        </action>
+        <action type="set_environment">
+	  <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
+	</action>
+      </actions>
+    </install>
+    <readme>
+some text
+    </readme>
+  </package>
+</tool_dependency>

@@ -1,0 +1,181 @@
+<tool id="cg_junctiondiff" name="junctiondiff(beta) 1.6" version="1.0.1">
+<!--
+This tool creates a GUI for the junctiondiff function of cgatools from Complete Genomics, Inc.
+written 6-18-2012 by bcrain@completegenomics.com
+updated 8-14-2012 by bcrain@completegenomics.com
+-->
+
+  <description>reports difference between junction calls</description>
+  
+  <command>
+<!-- print version of cgatools to STDOUT-->
+cgatools | head -1;
+
+<!-- print command lines to STDOUT-->
+echo "cgatools junctiondiff --beta
+--reference $crr.fields.path
+--junctionsA $data_sources.inputA
+--junctionsB $data_sources.inputB
+--scoreThresholdA $scoreA
+--scoreThresholdB $scoreB
+--distance $distance
+--minlength $minlength
+--output-prefix cg_
+$stat
+";
+
+<!-- execute cgatools-->
+cgatools junctiondiff --beta
+--reference $crr.fields.path
+--junctionsA $data_sources.inputA
+--junctionsB $data_sources.inputB
+--scoreThresholdA $scoreA
+--scoreThresholdB $scoreB
+--distance $distance
+--minlength $minlength
+--output-prefix cg_
+$stat  
+;
+mv cg_diff-*tsv cg_diff.tsv
+  </command>
+
+  <outputs>
+  	<data format="tabular" name="output1" from_work_dir="cg_diff.tsv" label="${tool.name} diff"/>
+		<data format="tabular" name="output2" from_work_dir="cg_report.tsv" label="${tool.name} report">
+			<filter>(stat == '--statout')</filter>
+		</data>
+  </outputs>
+  
+  <inputs>
+		<!--form field to select crr file-->
+		<param name="crr" type="select" label="Reference genome (.crr file)">
+			<options from_data_table="cg_crr_files" />
+		</param>
+	
+		<!--conditional to select variant file input-->
+  	<conditional name="data_sources">
+      <param name="data_source" type="select" label="Where are the input junction files?">
+        <option value="in" selected="true">imported into Galaxy</option>
+        <option value="out">located outside Galaxy (data on server or mounted drive)</option>
+      </param>
+      
+			<!--form field to select junction files-->
+      <when value="in">
+				<param name="inputA" type="data" format="tabluar" label="Junction file A">
+					<validator type="dataset_ok_validator" />
+					<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+					 metadata_name="dbkey" metadata_column="1"
+					 message="cgatools is not currently available for this build."/>
+				</param>
+				<param name="inputB" type="data" format="tabluar" label="Junction file B">
+					<validator type="dataset_ok_validator" />
+					<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+					 metadata_name="dbkey" metadata_column="1"
+					 message="cgatools is not currently available for this build."/>
+				</param>
+			</when>
+			
+			<!--form field to enter external input files-->
+      <when value="out">
+				<param name="inputA" type="text" label="Junction file A (/path/junction_file)" size="40" help="e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01_2000/ASM/SV/allJunctionsBeta-GS00000YYYY-ASM.tsv">
+					<validator type="empty_field" message="You must supply a junction file"/>
+				</param>
+				<param name="inputB" type="text" label="Junction file B (/path/junction_file)" size="40" help="e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01_2000/ASM/SV/allJunctionsBeta-GS00000YYYY-ASM.tsv">
+					<validator type="empty_field" message="You must supply a junction file"/>
+				</param>
+			</when>
+		</conditional>
+		
+		<!--form field to select stats output-->
+		<param name="stat" type="select" label="Print input file stats">
+			<option value="">no</option>
+			<option value="--statout">yes</option>
+		</param>
+
+		<!--other parameters-->
+		<param name="scoreA" type="integer" label="Score threshold value for input file A (default 10)" value="10">
+			<validator type="empty_field" message="You must enter a value, the default is 10" />
+		</param>
+		<param name="scoreB" type="integer" label="Score threshold value for input file B (default 0)" value="0">
+			<validator type="empty_field" message="You must enter a value, the default is 0" />
+		</param>
+		<param name="distance" type="integer" label="Max distance between coordinates of potentially compatible junctions (default 200)" value="200">
+			<validator type="empty_field" message="You must enter a value, the default is 200" />
+		</param>
+		<param name="minlength" type="integer" label="Minimum deletion junction length to be included into the difference file (default 500)" value="500">
+			<validator type="empty_field" message="You must enter a value, the default is 500" />
+		</param>
+  </inputs>
+
+
+  <help>
+  
+**What it does**
+
+This tool uses cgatools junctiondiff to report difference between junction calls of two Complete Genomics junctions files
+
+**cgatools 1.6.0 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  junctiondiff - Reports difference between junction calls of Complete Genomics junctions files.
+		
+		DESCRIPTION
+		  junctiondiff takes two junction files A and B as input and produces the 
+		  following output:
+		    - "diff-inputFileName" - the junctions from an input file A that are not 
+		      present in input file B.
+		    - "report.txt" - a brief summary report (if --statout is used)
+				
+		  Two junctions are considered equivalent if:
+		    - they come from different files
+		    - left and right positions of one junction are not more than "--distance"
+		      bases apart from the corresponding positions of another junction
+		    - the junction scores are equal or above the scoreThreshold
+		    - they are on the same strands
+		
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --beta 
+		      This is a beta command. To run this command, you must pass the --beta 
+		      flag.
+		
+		  -s [ --reference ] arg
+		      Reference file.
+		
+		  -a [ --junctionsA ] arg
+		      input junction file A.
+		
+		  -b [ --junctionsB ] arg
+		      input junction file B.
+		
+		  -A [ --scoreThresholdA ] arg (=10)
+		      score threshold value for the input file A.
+		
+		  -B [ --scoreThresholdB ] arg (=0)
+		      score threshold value for the input file B.
+		
+		  -d [ --distance ] arg (=200)
+		      Max distance between coordinates of potentially compatible junctions.
+		
+		  -l [ --minlength ] arg (=500)
+		      Minimum deletion junction length to be included into the difference 
+		      file.
+		
+		  -o [ --output-prefix ] arg
+		      The path prefix for all the output reports.
+		
+		  -S [ --statout ] 
+		      (Debug) Report various input file statistics. Experimental feature.
+		
+		SUPPORTED FORMAT_VERSION
+		  1.5 or later
+  </help>
+</tool>

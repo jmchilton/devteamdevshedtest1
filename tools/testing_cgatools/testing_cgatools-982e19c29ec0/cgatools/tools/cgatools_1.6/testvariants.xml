@@ -1,0 +1,166 @@
+<tool id="cg_testvariants" name="testvariants(beta) 1.6" version="1.0.1">
+<!--
+This tool creates a GUI for the testvariants function of cgatools from Complete Genomics, Inc.
+written 6-18-2012 by bcrain@completegenomics.com
+updated 8-14-2012 by bcrain@completegenomics.com
+-->
+
+  <description>test for the presence of variants</description>
+
+  <command>
+<!-- print version of cgatools to STDOUT-->
+cgatools | head -1;
+
+<!-- print command lines to STDOUT-->
+echo "cgatools testvariants --beta
+--reference ${crr.fields.path}
+--output $output
+--input $listing
+--variants 
+#if $data_sources.data_source == "in" <!--data in galaxy-->
+#for $v in $data_sources.file_types.files <!--get each var/mastervar file-->
+${v.input}
+#end for
+#else <!--data outside galaxy-->
+`cat $data_sources.list`
+#end if
+";
+
+<!-- execute cgatools-->
+cgatools testvariants
+--beta
+--reference ${crr.fields.path}
+--output $output
+--input $listing
+--variants 
+#if $data_sources.data_source == "in" <!--data in galaxy-->
+  #for $v in $data_sources.file_types.files <!--get each var/mastervar file-->
+    ${v.input}
+  #end for
+#else <!--data outside galaxy-->
+  `cat $data_sources.list`
+#end if
+  </command>
+
+  <outputs>
+    <data format="tabular" name="output" label="${tool.name} output"/>
+  </outputs>
+  
+  <inputs>
+  	<!--form field to select crr file-->
+    <param name="crr" type="select" label="Reference genome (.crr file)">
+      <options from_data_table="cg_crr_files" />
+    </param>
+
+	  <!--form fields to select variant list-->
+	  <param name="listing" type="data" format="tabular" label="Select variant list (output of listvariants)">
+			<validator type="dataset_ok_validator" />
+			<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+				metadata_name="dbkey" metadata_column="1"
+				message="cgatools is not currently available for this build."/>
+	  </param>
+
+		<!--conditional to select data in/outside galaxy-->
+		<conditional name="data_sources">
+			<param name="data_source" type="select" label="Where are the input files?">
+				<option value="in" selected="true">imported into Galaxy</option>
+				<option value="out">located outside Galaxy (data on server or mounted drive)</option>
+			</param>
+			
+			<when value="in">
+				<!--conditional to select input file type-->
+				<conditional name="file_types">
+					<param name="file_type" type="select" label="Select the input file type">
+						<option value="var" selected="true">var files</option>
+						<option value="mastervar">masterVar files</option>
+					</param>
+					
+					<!--form field to select variant files-->
+					<when value="var">			
+						<repeat name="files" title="Var file" min="1">
+							<param name="input" type="data" format="cg_var" label="Dataset">
+								<validator type="dataset_ok_validator" />
+								<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+									metadata_name="dbkey" metadata_column="1"
+									message="cgatools is not currently available for this build."/>
+							</param>
+						</repeat>
+					</when>
+					
+					<!--form field to select masterVar files-->
+					<when value="mastervar">			
+						<repeat name="files" title="MasterVar file" min="1">
+							<param name="input" type="data" format="cg_mastervar" label="Dataset">
+								<validator type="dataset_ok_validator" />
+								<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+									metadata_name="dbkey" metadata_column="1"
+									message="cgatools is not currently available for this build."/>
+							</param>
+						</repeat>
+					</when>
+				</conditional>
+			</when>
+			
+			<!--form field to enter list file-->
+			<when value="out">
+				<param name="list" type="text" label="Enter file containing list of var or masterVar files (/path/file)" size="200" help="This file should contain a list of var or masterVar files, one per line in the format /path/varfile (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01_2000/ASM/var-GS00000YYYY-ASM.tsv.bz2), the var or masterVar files can be compressed (gz, bz2).">
+					<validator type="empty_field" message="You must supply a file containing a list of var or masterVar files"/>
+				</param>
+			</when>
+		</conditional>
+  </inputs>
+
+  <help>
+  
+**What it does**
+
+This tool uses the cgatools testvariants to test var or masterVar files for the presence of variants.
+
+**cgatools 1.6.0 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+		  testvariants - Tests variant files for presence of variants.
+		
+		DESCRIPTION
+		  Tests variant files for presence of variants. The output is a tab-delimited
+		  file consisting of the columns of the input variants file, plus a column 
+		  for each assembly results file that contains a character code for each 
+		  allele. The character codes have meaning as follows:
+			
+		    0 This allele of this genome is consistent with the reference at this 
+		      locus but inconsistent with the variant.
+		    1 This allele of this genome has the input variant at this locus.
+		    N This allele of this genome has no-calls but is consistent with the 
+		      input variant.
+		
+		OPTIONS
+		  -h [ --help ] 
+		      Print this help message.
+		
+		  --beta 
+		      This is a beta command. To run this command, you must pass the --beta 
+		      flag.
+		
+		  --reference arg
+		      The reference crr file.
+		
+		  --input arg (=STDIN)
+		      The input variants to test for.
+		
+		  --output arg (=STDOUT)
+		      The output file (may be omitted for stdout).
+		
+		  --variants arg
+		      The input variant files (may be passed in as arguments at the end of 
+		      the command).
+		
+		SUPPORTED FORMAT_VERSION
+		  0.3 or later
+  </help>
+</tool>

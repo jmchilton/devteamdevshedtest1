@@ -1,0 +1,229 @@
+<tool id="cg_evidence2sam" name="evidence2sam(beta) 1.6" version="1.0.0">
+<!--
+This tool creates a GUI for the evidence2sam function of cgatools from Complete Genomics, Inc.
+written 8-31-2012 by bcrain@completegenomics.com
+-->
+
+  <description>converts evidence mappings to SAM format</description>
+  
+  <command>
+<!-- print version of cgatools to STDOUT-->
+cgatools | head -1;
+
+<!-- print command lines to STDOUT-->
+echo "cgatools evidence2sam --beta
+--reference $crr.fields.path
+--output $output
+--evidence-dnbs $data_sources.input
+--consistent-mapping-range $range
+#if $region.selectregion == "yes"
+--extract-genomic-region $region.coordinates
+#end if
+$duplicates
+$mates
+$intervals
+$skip
+$svcandidates
+$unmapped
+$primary
+";
+
+<!-- execute cgatools-->
+cgatools evidence2sam --beta
+--reference $crr.fields.path
+--evidence-dnbs $data_sources.input
+#if $region.selectregion == "yes"
+	--extract-genomic-region $region.coordinates
+#end if
+$duplicates
+$mates
+$intervals
+$skip
+$svcandidates
+$unmapped
+$primary
+--consistent-mapping-range $range
+--output $output
+  </command>
+
+  <outputs>
+    <data format="tabular" name="output" label="${tool.name} output"/>
+  </outputs>
+  
+  <inputs>
+		<!--form field to select crr file-->
+		<param name="crr" type="select" label="Reference genome (.crr file)">
+			<options from_data_table="cg_crr_files" />
+		</param>
+	
+		<!--conditional to select input file-->
+  	<conditional name="data_sources">
+      <param name="data_source" type="select" label="Where is the input evidence file?">
+        <option value="in">imported into Galaxy</option>
+        <option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+      </param>
+      
+			<!--form field to select evidence files-->
+      <when value="in">
+				<param name="input" type="data" format="tabluar" label="EvidenceDnbs file">
+					<validator type="dataset_ok_validator" />
+					<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+					 metadata_name="dbkey" metadata_column="1"
+					 message="cgatools is not currently available for this build."/>
+				</param>
+			</when>
+			
+			<!--form field to enter external input file-->
+      <when value="out">
+				<param name="input" type="text" label="EvidenceDnbs file (/path/file)" size="40" help="e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01_2000/ASM/EVIDENCE/evidenceDnbs-chr21-GS00000YYYY-ASM.tsv.bz2">
+					<validator type="empty_field" message="You must supply an evidenceDnbs file"/>
+				</param>
+			</when>
+		</conditional>
+
+		<!--form field to select chromosomal region-->
+		<conditional name="region">
+			<param name="selectregion" type="select" label="Do you what to extract specific genomic region?">
+				<option value="no" selected="true">no</option>
+				<option value="yes">yes</option>
+			</param>
+
+			<when value="yes">
+				<param name="coordinates" type="text" label="Enter genomic coordinates to avoid converting the entire file (chr,from,to)" size="40" help="Specify the region as a half-open interval chr,from,to (e.g. chrX,15203639,15412498)"/>
+			</when>
+		</conditional>
+		
+		<!--form field to select duplicate handling-->
+		<param name="duplicates" type="select" label="Keep local duplicates of DNB mappings (default no)" help="All the output SAM records will be marked as 'not primary' if this option is used.">
+			<option value="" selected="true">no</option>
+			<option value="--keep-duplicates">yes</option>
+		</param>
+
+		<!--form field to generate mate sequence-->
+		<param name="mates" type="select" label="Generate mate sequence (R2) and score (Q2) tags (default no)">
+			<option value="" selected="true">no</option>
+			<option value="--add-mate-sequence">yes</option>
+		</param>
+
+		<!--form field to generate interval ids-->
+		<param name="intervals" type="select" label="Generate interval id (ZI:I) and allele id (ZA:I) tags (default no)">
+			<option value="" selected="true">no</option>
+			<option value="--add-allele-id">yes</option>
+		</param>
+
+		<!--form field to skip not mapped reads-->
+		<param name="skip" type="select" label="Skip not mapped records (default no)">
+			<option value="" selected="true">no</option>
+			<option value="--skip-not-mapped">yes</option>
+		</param>
+
+		<!--form field to skip not mapped reads-->
+		<param name="svcandidates" type="select" label="Mate unique single arm mappings in SAM including those on different stands and chromosomes (default no)">
+			<option value="" selected="true">no</option>
+			<option value="--mate-sv-candidates">yes</option>
+		</param>
+
+		<!--form field to skip not mapped reads-->
+		<param name="unmapped" type="select" label="Generate mate sequence and score tags for inconsistent mappings only (default no)">
+			<option value="" selected="true">no</option>
+			<option value="--add-unmapped-mate-info">yes</option>
+		</param>
+
+		<!--form field to skip not mapped reads-->
+		<param name="primary" type="select" label="Use primary mappings only (default no)" help="Report only the best mappings">
+			<option value="" selected="true">no</option>
+			<option value="--primary-mappings-only">yes</option>
+		</param>
+
+		<param name="range" type="integer" value="1300" label="Maximum distance between consistent mates (default 1300)">
+			<validator type="empty_field" message="You must enter a value, the default is 1300" />
+		</param>
+  </inputs>
+
+	<stdio>
+		<regex match="failed" source="stderr" level="fatal"/>
+		<regex match="error" source="stderr" level="fatal"/>
+		<regex match="Export the sequence:" source="stderr" level="warning" description="Finished:" />
+	</stdio>
+
+  <help>
+  
+**What it does**
+
+This tool uses cgatools evidence2sam to convert Complete Genomics evidence mappings to SAM format
+
+**cgatools 1.6.0 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+				evidence2sam - Converts CGI variant evidence data into SAM format.
+		
+		DESCRIPTION
+				The evidence2sam converter takes as input evidence mapping files 
+				(evidenceDnbs-*) and generates one SAM file as an output. The output is 
+				sent into stdout by default. By default, all the evidence mapping records 
+				from the input are converted into a pair of corresponding SAM records - one
+				record for each HalfDNB. The negative gaps in CGI mappings are represented 
+				using GS/GQ/GC tags.
+		
+		OPTIONS
+			-h [ --help ] 
+						Print this help message.
+		
+			--beta 
+						This is a beta command. To run this command, you must pass the --beta 
+						flag.
+		
+			-e [ --evidence-dnbs ] arg
+						Input evidence dnbs file.
+		
+			-s [ --reference ] arg
+						Reference file.
+		
+			-o [ --output ] arg (=STDOUT)
+						The output SAM file (may be omitted for stdout).
+		
+			-r [ --extract-genomic-region ] arg
+						defines a region as a half-open interval 'chr,from,to'.
+		
+			--keep-duplicates 
+						Keep local duplicates of DNB mappings.All the output SAM records will 
+						be marked as not primary if this option is used.
+		
+			--add-allele-id 
+						Generate interval id and allele id tags.
+		
+			--skip-not-mapped 
+						Skip not mapped records
+		
+			--add-mate-sequence 
+						Generate mate sequence and score tags.
+		
+			--mate-sv-candidates 
+						Inconsistent mappings are normally converted as single arm mappings 
+						with no mate information provided. If the option is used map2sam will 
+						mate unique single arm mappings in SAM including those on different 
+						stands and chromosomes. To distinguish these "artificially" mated 
+						records a tag "XS:i:1" is used. The MAPQ provided for these records is 
+						a single arm mapping weight.
+		
+			--add-unmapped-mate-info 
+						works like add-mate-sequence, but is applied to inconsistent mappings 
+						only
+		
+			--primary-mappings-only 
+						report only the best mappings
+		
+			--consistent-mapping-range arg (=1300)
+						limit the maximum distance between consistent mates
+		
+		
+		SUPPORTED FORMAT_VERSION
+				0.3 or later
+  </help>
+</tool>

@@ -1,0 +1,1001 @@
+<tool id="cg_mkvcf" name="mkvcf(beta) 1.6" version="1.0.0">
+<!--
+This tool creates a GUI for the mkvcf function of cgatools from Complete Genomics, Inc.
+written 7-31-2012 by bcrain@completegenomics.com
+-->
+
+  <description>converts to vcf</description>
+
+  <command interpreter="perl">
+  	<!--run wrapper script-->
+  	mkvcf_wrapper.pl
+  	--reference $crr.fields.path
+  	--output $output
+  	--genomes $count.genomes
+		--source $count.sources.source
+		--datasource $count.sources.data_sources.data_source
+		#if $count.sources.data_sources.data_source=="in"
+			#for $m in $count.sources.data_sources.files
+				--input $m.input
+			#end for
+		#else
+			--input $count.sources.data_sources.input
+		#end if
+		#if $count.sources.source=="masterVar" or $count.sources.source=="masterVar,CNV"
+	  	$count.sources.nocalls
+	  	--calibration $count.sources.calibration
+	  #else if $count.sources.source=="SV"
+			--jctscore $count.sources.jctscore
+			--jctside $count.sources.jctside
+			--jctdistance $count.sources.jctdistance
+			--jctlength $count.sources.jctlength
+			$count.sources.jctpriority
+			$count.sources.jcttumor
+	  #else if $count.sources.source=="masterVar,CNV,SV" or $count.sources.source=="masterVar,CNV,SV,MEI"
+	  	$count.sources.nocalls
+	  	--calibration $count.sources.calibration
+			--jctscore $count.sources.jctscore
+			--jctside $count.sources.jctside
+			--jctdistance $count.sources.jctdistance
+			--jctlength $count.sources.jctlength
+			$count.sources.jctpriority
+			$count.sources.jcttumor
+	  #end if
+	  	--fields $count.sources.fields
+  </command>
+
+  <outputs>
+    <data format="vcf" name="output" label="${tool.name} output"/>
+  </outputs>
+  
+  <inputs>
+  	<!--form field to select crr file-->
+    <param name="crr" type="select" label="Reference genome (.crr file)">
+      <options from_data_table="cg_crr_files" />
+    </param>
+    
+    <!--select number of genomes - determines which input sources to show-->
+    <conditional name="count">
+    	<param name="genomes" type="select" label="Select the number of genomes to add to the vcf file" help="Note: multi-genome vcfs (2 or more genomes) can only be generated for format version 2.0 and up">
+				<option value="1" selected="true">1 - allowed data sources are masterVar, CNV, SV, MEI</option>
+				<option value="2">2 - allowed data sources are masterVar, CNV, SV (format v2.x)</option>
+				<option value="3">3 or more - allowed data sources are masterVar, CNV (format v2.x)</option>
+			</param>
+    	
+			<when value="1">
+				<!--form field to select input sources-->
+				<conditional name="sources">
+					<param name="source" type="select" label="Data sources to be included for this genome">
+						<option value="masterVar,CNV,SV,MEI" selected="true">masterVar + CNV + SV + MEI</option>
+						<option value="masterVar">masterVar</option>
+						<option value="CNV">CNV</option>
+						<option value="SV">SV</option>
+						<option value="MEI">MEI</option>
+					</param>
+					
+					<when value="masterVar,CNV,SV,MEI">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="Genome root directory" size="200" help="Enter full path /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01).">
+									<validator type="empty_field" message="You must supply the genome root directory"/>
+								</param>
+							</when>
+						</conditional>
+					
+						<!--form field to select no-calls-->
+						<param name="nocalls" type="select" label="Include no-calls?">
+							<option value="" selected="true">no</option>
+							<option value="--nocalls">yes</option>
+						</param>
+
+						<!--form field to enter calibration directory-->
+						<param name="calibration" type="text" size="300" label="Directory calibration data (/path/calibration-root)" help="The directory containing calibration data. For example, there should exist a file calibration-root/0.0.0/metrics.tsv. Calibration data can be downloaded from ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz"/>
+						
+						<!--form fields junction threshold options-->
+						<param name="jctscore" type="integer" value="10" label="Junction score thresholds (discordant mate pair count) (default 10)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 10" />
+						</param>
+						<param name="jctside" type="integer" value="70" label="Junction side length threshold (default 70)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 70" />
+						</param>
+						<param name="jctdistance" type="integer" value="200" label="Distance tolerance for junction compatibility (default 200)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 200" />
+						</param>
+						<param name="jctlength" type="integer" value="500" label="Length threshold for compatible junctions (default 500)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 500" />
+						</param>
+				
+						<!--form field to select junction confidence in tumors-->
+						<param name="jctpriority" type="select" label="Use normal junction priority for vcf output?">
+							<option value="" selected="true">no</option>
+							<option value="--jctpriority">yes</option>
+						</param>
+				 
+						<!--form field to select junction confidence in tumors-->
+						<param name="jcttumor" type="select" label="Use high confidence junctions for tumors?">
+							<option value="" selected="true">no</option>
+							<option value="--jcttumor">yes</option>
+						</param>
+
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="AN">AN - Total number of alleles in called genotypes</option>
+							<option value="AC">AC - Allele count in genotypes</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="CGA_FI">CGA_FI - Functional impact</option>
+							<option value="CGA_PFAM">CGA_PFAM - PFAM domain </option>
+							<option value="CGA_MIRB">CGA_MIRB - miRBaseId</option>
+							<option value="CGA_SDO">CGA_SDO - Depth of overlapping segmental duplications</option>
+							<option value="CGA_RPT">CGA_RPT - Overlapping repeatMasker annotations</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="PS">PS - Phase set</option>
+							<option value="FT">FT - Sample genotype filters</option>
+							<option value="GL">GL - Genotype likelihoods</option>
+							<option value="CGA_CEHQ">CGA_CEHQ - Calibrated haplotype quality based on EAF assumption</option>
+							<option value="CGA_CEGL">CGA_CEGL - Genotype likelihoods based on CEHQ</option>
+							<option value="SS">SS - Somatic status</option>
+							<option value="HQ">HQ - Haplotype quality</option>
+							<option value="EHQ">EHQ - Haplotype quality based on EAF assumption</option>
+							<option value="GQ">GQ - Genotype quality</option>
+							<option value="DP">DP - Total read depth</option>
+							<option value="AD">AD - Allelic depths</option>
+							<option value="CGA_RDP">CGA_RDP - Read depth in reference</option>
+							<option value="CGA_ODP">CGA_ODP - Other total read depth: somatic comparison</option>
+							<option value="CGA_OAD">CGA_OAD - Other allelic depths: somatic comparison</option>
+							<option value="CGA_ORDP">CGA_ORDP - Other reference depth: somatic comparison </option>
+							<option value="CGA_SOMC">CGA_SOMC - Somatic Category</option>
+							<option value="CGA_SOMR">CGA_SOMR - Somatic Rank</option>
+							<option value="CGA_SOMS">CGA_SOMS - Somatic Score</option>
+							<option value="CGA_GP">CGA_GP - Normalized mean GC corrected coverage</option>
+							<option value="CGA_NP">CGA_NP - Normalized mean coverage for 2k window</option>
+							<option value="CGA_CP">CGA_CP - Diploid-model ploidy call for segment including this interval</option>
+							<option value="CGA_PS">CGA_PS - Diploid-model called ploidy score</option>
+							<option value="CGA_CT">CGA_CT - Diploid-model CNV type</option>
+							<option value="CGA_TS">CGA_TS - Diploid-model CNV type score</option>
+							<option value="CGA_CL">CGA_CL - Nondiploid-model called level</option>
+							<option value="CGA_LS">CGA_LS - Nondiploid-model called level score</option>
+							<option value="CGA_SCL">CGA_SCL - Nondiploid-model somatic called level</option>
+							<option value="CGA_SLS">CGA_SLS - Non-diploid-model somatic called level score</option>
+							<option value="CGA_LAF">CGA_LAF - Lesser Allele Fraction estimate, 100k window</option>
+							<option value="CGA_LLAF">CGA_LLAF - Lesser Allele Fraction lower bound, 100k window</option>
+							<option value="CGA_ULAF">CGA_ULAF - Lesser Allele Fraction upper bound, 100k window</option>
+							<option value="SVTYPE">SVTYPE - Type of structural variation</option>
+							<option value="CGA_BF">CGA_BF - Frequency in set of baseline genomes</option>
+							<option value="CGA_MEDEL">CGA_MEDEL - Mobile element deletion</option>
+							<option value="MATEID">MATEID - ID of mate breakend</option>
+							<option value="CGA_BNDG">CGA_BNDG - Transcript name and strand of genes containing breakend</option>
+							<option value="CGA_BNDGO">CGA_BNDGO - Transcript name and strand of genes containing mate breakend</option>
+							<option value="CGA_BNDP">CGA_BNDP - Precision of breakend</option>
+							<option value="CGA_BNDMPC">CGA_BNDMPC - Mate pair count supporting a breakend</option>
+							<option value="CGA_BNDPOS">CGA_BNDPOS - Position of breakend as detected in individual genome</option>
+							<option value="CGA_BNDDEF">CGA_BNDDEF - Breakend definition in individual genome</option>
+							<option value="CGA_IS">CGA_IS - Measure of confidence that there is a mobile element insertion</option>
+							<option value="CGA_IDC">CGA_IDC - Count of paired ends consistently indicating a mobile element insertion</option>
+							<option value="CGA_IDCL">CGA_IDCL - Count of paired ends indicating a mobile element insertion anchored 5&#39;</option>
+							<option value="CGA_IDCR">CGA_IDCR - Count of paired ends indicating a mobile element insertion anchored 3&#39;</option>
+							<option value="CGA_RDC">CGA_RDC - Count of paired ends supporting the presence of a reference allele</option>
+							<option value="CGA_NBET">CGA_NBET - Next-best estimate of type of MEI</option>
+							<option value="CGA_ETS">CGA_ETS - Measure of confidence that the ElementType (MEINFO:NAME) is correct</option>
+							<option value="CGA_KES">CGA_KES - Fraction of known MEI with at least as good an InsertionScore</option>
+						</param>
+					</when>
+
+					<when value="masterVar">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where is the input file?">
+								<option value="in" selected="true">imported into Galaxy</option>
+								<option value="out">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="in">
+								<!--form field to select mastervar files-->
+								<repeat name="files" title="MasterVar file" min="1" max="1">
+									<param name="input" type="data" format="cg_mastervar" label="Dataset">
+										<validator type="dataset_ok_validator" />
+										<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+										 metadata_name="dbkey" metadata_column="1"
+										 message="cgatools is not currently available for this build."/>
+									</param>
+								</repeat>
+							</when>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="Genome root directory or masterVar file" size="200" help="Enter full path /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01), or /path/masterVarfile (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01/ASM/masterVarBeta-GS00000YYYY-ASM.tsv.bz2).">
+									<validator type="empty_field" message="You must supply the genome root directory or masterVar file"/>
+								</param>
+							</when>
+						</conditional>
+									
+						<!--form field to select no-calls-->
+						<param name="nocalls" type="select" label="Include no-calls?">
+							<option value="" selected="true">no</option>
+							<option value="--nocalls">yes</option>
+						</param>
+						
+						<!--form field to enter calibration directory-->
+						<param name="calibration" type="text" size="300" label="Directory calibration data (/path/calibration-root)" help="The directory containing calibration data. For example, there should exist a file calibration-root/0.0.0/metrics.tsv. Calibration data can be downloaded from ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz"/>
+
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="AN">AN - Total number of alleles in called genotypes</option>
+							<option value="AC">AC - Allele count in genotypes</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="CGA_FI">CGA_FI - Functional impact</option>
+							<option value="CGA_PFAM">CGA_PFAM - PFAM domain </option>
+							<option value="CGA_MIRB">CGA_MIRB - miRBaseId</option>
+							<option value="CGA_SDO">CGA_SDO - Depth of overlapping segmental duplications</option>
+							<option value="CGA_RPT">CGA_RPT - Overlapping repeatMasker annotations</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="PS">PS - Phase set</option>
+							<option value="FT">FT - Sample genotype filters</option>
+							<option value="GL">GL - Genotype likelihoods</option>
+							<option value="CGA_CEHQ">CGA_CEHQ - Calibrated haplotype quality based on EAF assumption</option>
+							<option value="CGA_CEGL">CGA_CEGL - Genotype likelihoods based on CEHQ</option>
+							<option value="SS">SS - Somatic status</option>
+							<option value="HQ">HQ - Haplotype quality</option>
+							<option value="EHQ">EHQ - Haplotype quality based on EAF assumption</option>
+							<option value="GQ">GQ - Genotype quality</option>
+							<option value="DP">DP - Total read depth</option>
+							<option value="AD">AD - Allelic depths</option>
+							<option value="CGA_RDP">CGA_RDP - Read depth in reference</option>
+							<option value="CGA_ODP">CGA_ODP - Other total read depth: somatic comparison</option>
+							<option value="CGA_OAD">CGA_OAD - Other allelic depths: somatic comparison</option>
+							<option value="CGA_ORDP">CGA_ORDP - Other reference depth: somatic comparison </option>
+							<option value="CGA_SOMC">CGA_SOMC - Somatic Category</option>
+							<option value="CGA_SOMR">CGA_SOMR - Somatic Rank</option>
+							<option value="CGA_SOMS">CGA_SOMS - Somatic Score</option>
+						</param>
+					</when>
+					
+					<when value="CNV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="Genome root directory" size="200" help="Enter full path /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01).">
+									<validator type="empty_field" message="You must supply the genome root directory"/>
+								</param>
+							</when>
+						</conditional>
+						
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="CGA_GP">CGA_GP - Normalized mean GC corrected coverage</option>
+							<option value="CGA_NP">CGA_NP - Normalized mean coverage for 2k window</option>
+							<option value="CGA_CP">CGA_CP - Diploid-model ploidy call for segment</option>
+							<option value="CGA_PS">CGA_PS - Diploid-model called ploidy score</option>
+							<option value="CGA_CT">CGA_CT - Diploid-model CNV type</option>
+							<option value="CGA_TS">CGA_TS - Diploid-model CNV type score</option>
+							<option value="CGA_CL">CGA_CL - Nondiploid-model called level</option>
+							<option value="CGA_LS">CGA_LS - Nondiploid-model called level score</option>
+							<option value="CGA_SCL">CGA_SCL - Nondiploid-model somatic called level</option>
+							<option value="CGA_SLS">CGA_SLS - Non-diploid-model somatic called level score</option>
+							<option value="CGA_LAF">CGA_LAF - Lesser Allele Fraction estimate, 100k window</option>
+							<option value="CGA_LLAF">CGA_LLAF - Lesser Allele Fraction lower bound, 100k window</option>
+							<option value="CGA_ULAF">CGA_ULAF - Lesser Allele Fraction upper bound, 100k window</option>
+						</param>
+					</when>
+					
+					<when value="SV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="in" selected="true">imported into Galaxy</option>
+								<option value="out">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="in">
+								<!--form field to select SV file-->
+								<repeat name="files" title="SV file" min="1" max="1">
+									<param name="input" type="data" format="tabular" label="Dataset">
+										<validator type="dataset_ok_validator" />
+										<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+										 metadata_name="dbkey" metadata_column="1"
+										 message="cgatools is not currently available for this build."/>
+									</param>
+								</repeat>
+							</when>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="Genome root directory or SV file" size="200" help="Enter full path /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01), or /path/SVfile (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01/ASM/SV/allJunctionsBeta-GS00000YYYY-ASM.tsv).">
+									<validator type="empty_field" message="You must supply the genome root directory or SV file"/>
+								</param>
+							</when>
+						</conditional>
+									
+						<!--form fields junction threshold options-->
+						<param name="jctscore" type="integer" value="10" label="Junction score thresholds (discordant mate pair count) (default 10)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 10" />
+						</param>
+						<param name="jctside" type="integer" value="70" label="Junction side length threshold (default 70)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 70" />
+						</param>
+						<param name="jctdistance" type="integer" value="200" label="Distance tolerance for junction compatibility (default 200)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 200" />
+						</param>
+						<param name="jctlength" type="integer" value="500" label="Length threshold for compatible junctions (default 500)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 500" />
+						</param>
+				
+						<!--form field to select junction confidence in tumors-->
+						<param name="jctpriority" type="select" label="Use normal junction priority for vcf output?">
+							<option value="" selected="true">no</option>
+							<option value="--jctpriority">yes</option>
+						</param>
+				 
+						<!--form field to select junction confidence in tumors-->
+						<param name="jcttumor" type="select" label="Use high confidence junctions for tumors?">
+							<option value="" selected="true">no</option>
+							<option value="--jcttumor">yes</option>
+						</param>
+
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+				      <option value="GT">GT - Genotype</option>
+				      <option value="FT">FT - Sample genotype filters</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="SVTYPE">SVTYPE - Type of structural variation</option>
+							<option value="CGA_BF">CGA_BF - Frequency in set of baseline genomes</option>
+							<option value="CGA_MEDEL">CGA_MEDEL - Mobile element deletion</option>
+							<option value="MATEID">MATEID - ID of mate breakend</option>
+							<option value="CGA_BNDG">CGA_BNDG - Transcript name and strand of genes containing breakend</option>
+							<option value="CGA_BNDGO">CGA_BNDGO - Transcript name and strand of genes containing mate breakend</option>
+							<option value="CGA_BNDP">CGA_BNDP - Precision of breakend</option>
+							<option value="CGA_BNDMPC">CGA_BNDMPC - Mate pair count supporting a breakend</option>
+							<option value="CGA_BNDPOS">CGA_BNDPOS - Position of breakend as detected in individual genome</option>
+							<option value="CGA_BNDDEF">CGA_BNDDEF - Breakend definition in individual genome</option>
+						</param>
+					</when>
+					
+					<when value="MEI">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to select outside list of genome directories or mastervar files-->
+								<param name="input" type="text" label="Genome root directory" size="200" help="Enter full path /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01).">
+									<validator type="empty_field" message="You must supply the genome root directory"/>
+								</param>
+							</when>
+						</conditional>
+						
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+				      <option value="GT">GT - Genotype</option>
+				      <option value="FT">FT - Sample genotype filters</option>
+							<option value="CGA_IS">CGA_IS - Measure of confidence that there is a mobile element insertion</option>
+							<option value="CGA_IDC">CGA_IDC - Count of paired ends consistently indicating a mobile element insertion</option>
+							<option value="CGA_IDCL">CGA_IDCL - Count of paired ends indicating a mobile element insertion, anchored 5&#39;</option>
+							<option value="CGA_IDCR">CGA_IDCR - Count of paired ends indicating a mobile element insertion, anchored 3&#39;</option>
+							<option value="CGA_RDC">CGA_RDC - Count of paired ends supporting the presence of a reference allele</option>
+							<option value="CGA_NBET">CGA_NBET - Next-best estimate of type of MEI</option>
+							<option value="CGA_ETS">CGA_ETS - Measure of confidence that the ElementType (MEINFO:NAME) is correct</option>
+							<option value="CGA_KES">CGA_KES - Fraction of known MEI with at least as good an InsertionScore</option>
+						</param>
+					</when>
+
+				</conditional>
+			</when>
+			
+			<when value="2">
+				<!--form field to select input sources-->
+				<conditional name="sources">
+					<param name="source" type="select" label="Data sources to be included for each genome">
+						<option value="masterVar,CNV,SV" selected="true">masterVar + CNV + SV</option>
+						<option value="masterVar">masterVar</option>
+						<option value="CNV">CNV</option>
+						<option value="SV">SV</option>
+					</param>
+
+					<when value="masterVar,CNV,SV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="File with list of genome root directories" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01). For normal/tumor comparisons list the baseline genome first.">
+									<validator type="empty_field" message="You must supply the list of genome root directories"/>
+								</param>
+							</when>
+						</conditional>
+					
+						<!--form field to select no-calls-->
+						<param name="nocalls" type="select" label="Include no-calls?">
+							<option value="" selected="true">no</option>
+							<option value="--nocalls">yes</option>
+						</param>
+						
+						<!--form field to enter calibration directory-->
+						<param name="calibration" type="text" size="300" label="Directory calibration data (/path/calibration-root)" help="The directory containing calibration data. For example, there should exist a file calibration-root/0.0.0/metrics.tsv. Calibration data can be downloaded from ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz"/>
+
+						<!--form fields junction threshold options-->
+						<param name="jctscore" type="integer" value="10" label="Junction score thresholds (discordant mate pair count) (default 10)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 10" />
+						</param>
+						<param name="jctside" type="integer" value="70" label="Junction side length threshold (default 70)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 70" />
+						</param>
+						<param name="jctdistance" type="integer" value="200" label="Distance tolerance for junction compatibility (default 200)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 200" />
+						</param>
+						<param name="jctlength" type="integer" value="500" label="Length threshold for compatible junctions (default 500)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 500" />
+						</param>
+				
+						<!--form field to select junction confidence in tumors-->
+						<param name="jctpriority" type="select" label="Use normal junction priority for vcf output?">
+							<option value="" selected="true">no</option>
+							<option value="--jctpriority">yes</option>
+						</param>
+				 
+						<!--form field to select junction confidence in tumors-->
+						<param name="jcttumor" type="select" label="Use high confidence junctions for tumors?">
+							<option value="" selected="true">no</option>
+							<option value="--jcttumor">yes</option>
+						</param>
+		
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="AN">AN - Total number of alleles in called genotypes</option>
+							<option value="AC">AC - Allele count in genotypes</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="CGA_FI">CGA_FI - Functional impact</option>
+							<option value="CGA_PFAM">CGA_PFAM - PFAM domain </option>
+							<option value="CGA_MIRB">CGA_MIRB - miRBaseId</option>
+							<option value="CGA_SDO">CGA_SDO - Depth of overlapping segmental duplications</option>
+							<option value="CGA_RPT">CGA_RPT - Overlapping repeatMasker annotations</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="PS">PS - Phase set</option>
+							<option value="FT">FT - Sample genotype filters</option>
+							<option value="GL">GL - Genotype likelihoods</option>
+							<option value="CGA_CEHQ">CGA_CEHQ - Calibrated haplotype quality based on EAF assumption</option>
+							<option value="CGA_CEGL">CGA_CEGL - Genotype likelihoods based on CEHQ</option>
+							<option value="SS">SS - Somatic status</option>
+							<option value="HQ">HQ - Haplotype quality</option>
+							<option value="EHQ">EHQ - Haplotype quality based on EAF assumption</option>
+							<option value="GQ">GQ - Genotype quality</option>
+							<option value="DP">DP - Total read depth</option>
+							<option value="AD">AD - Allelic depths</option>
+							<option value="CGA_RDP">CGA_RDP - Read depth in reference</option>
+							<option value="CGA_ODP">CGA_ODP - Other total read depth: somatic comparison</option>
+							<option value="CGA_OAD">CGA_OAD - Other allelic depths: somatic comparison</option>
+							<option value="CGA_ORDP">CGA_ORDP - Other reference depth: somatic comparison </option>
+							<option value="CGA_SOMC">CGA_SOMC - Somatic Category</option>
+							<option value="CGA_SOMR">CGA_SOMR - Somatic Rank</option>
+							<option value="CGA_SOMS">CGA_SOMS - Somatic Score</option>
+							<option value="CGA_GP">CGA_GP - Normalized mean GC corrected coverage</option>
+							<option value="CGA_NP">CGA_NP - Normalized mean coverage for 2k window</option>
+							<option value="CGA_CP">CGA_CP - Diploid-model ploidy call for segment</option>
+							<option value="CGA_PS">CGA_PS - Diploid-model called ploidy score</option>
+							<option value="CGA_CT">CGA_CT - Diploid-model CNV type</option>
+							<option value="CGA_TS">CGA_TS - Diploid-model CNV type score</option>
+							<option value="CGA_CL">CGA_CL - Nondiploid-model called level</option>
+							<option value="CGA_LS">CGA_LS - Nondiploid-model called level score</option>
+							<option value="CGA_SCL">CGA_SCL - Nondiploid-model somatic called level</option>
+							<option value="CGA_SLS">CGA_SLS - Non-diploid-model somatic called level score</option>
+							<option value="CGA_LAF">CGA_LAF - Lesser Allele Fraction estimate, 100k window</option>
+							<option value="CGA_LLAF">CGA_LLAF - Lesser Allele Fraction lower bound, 100k window</option>
+							<option value="CGA_ULAF">CGA_ULAF - Lesser Allele Fraction upper bound, 100k window</option>
+							<option value="SVTYPE">SVTYPE - Type of structural variation</option>
+							<option value="CGA_BF">CGA_BF - Frequency in set of baseline genomes</option>
+							<option value="CGA_MEDEL">CGA_MEDEL - Mobile element deletion</option>
+							<option value="MATEID">MATEID - ID of mate breakend</option>
+							<option value="CGA_BNDG">CGA_BNDG - Transcript name and strand of genes containing breakend</option>
+							<option value="CGA_BNDGO">CGA_BNDGO - Transcript name and strand of genes containing mate breakend</option>
+							<option value="CGA_BNDP">CGA_BNDP - Precision of breakend</option>
+							<option value="CGA_BNDMPC">CGA_BNDMPC - Mate pair count supporting a breakend</option>
+							<option value="CGA_BNDPOS">CGA_BNDPOS - Position of breakend as detected in individual genome</option>
+							<option value="CGA_BNDDEF">CGA_BNDDEF - Breakend definition in individual genome</option>
+						</param>
+ 					</when>
+					
+					<when value="masterVar">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="in" selected="true">imported into Galaxy</option>
+								<option value="out">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="in">
+								<!--form field to select input files-->
+								<repeat name="files" title="MasterVar file" min="1" max="2">
+									<param name="input" type="data" format="cg_mastervar" label="Dataset">
+										<validator type="dataset_ok_validator"/>
+										<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+										 metadata_name="dbkey" metadata_column="1"
+										 message="cgatools is not currently available for this build."/>
+									</param>
+								</repeat>
+							</when>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="File with list of genome root directories or masterVar files" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01), or a list of masterVar files, one per line in the format /path/masterVarfile (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01/ASM/masterVarBeta-GS00000YYYY-ASM.tsv.bz2).">
+									<validator type="empty_field" message="You must supply the list of genome root directories or masterVar files"/>
+								</param>
+							</when>
+						</conditional>
+									
+						<!--form field to select no-calls-->
+						<param name="nocalls" type="select" label="Include no-calls?">
+							<option value="" selected="true">no</option>
+							<option value="--nocalls">yes</option>
+						</param>
+
+						<!--form field to enter calibration directory-->
+						<param name="calibration" type="text" size="300" label="Directory calibration data (/path/calibration-root)" help="The directory containing calibration data. For example, there should exist a file calibration-root/0.0.0/metrics.tsv. Calibration data can be downloaded from ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz"/>
+						
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="AN">AN - Total number of alleles in called genotypes</option>
+							<option value="AC">AC - Allele count in genotypes</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="CGA_FI">CGA_FI - Functional impact</option>
+							<option value="CGA_PFAM">CGA_PFAM - PFAM domain </option>
+							<option value="CGA_MIRB">CGA_MIRB - miRBaseId</option>
+							<option value="CGA_SDO">CGA_SDO - Depth of overlapping segmental duplications</option>
+							<option value="CGA_RPT">CGA_RPT - Overlapping repeatMasker annotations</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="PS">PS - Phase set</option>
+							<option value="FT">FT - Sample genotype filters</option>
+							<option value="GL">GL - Genotype likelihoods</option>
+							<option value="CGA_CEHQ">CGA_CEHQ - Calibrated haplotype quality based on EAF assumption</option>
+							<option value="CGA_CEGL">CGA_CEGL - Genotype likelihoods based on CEHQ</option>
+							<option value="SS">SS - Somatic status</option>
+							<option value="HQ">HQ - Haplotype quality</option>
+							<option value="EHQ">EHQ - Haplotype quality based on EAF assumption</option>
+							<option value="GQ">GQ - Genotype quality</option>
+							<option value="DP">DP - Total read depth</option>
+							<option value="AD">AD - Allelic depths</option>
+							<option value="CGA_RDP">CGA_RDP - Read depth in reference</option>
+							<option value="CGA_ODP">CGA_ODP - Other total read depth: somatic comparison</option>
+							<option value="CGA_OAD">CGA_OAD - Other allelic depths: somatic comparison</option>
+							<option value="CGA_ORDP">CGA_ORDP - Other reference depth: somatic comparison </option>
+							<option value="CGA_SOMC">CGA_SOMC - Somatic Category</option>
+							<option value="CGA_SOMR">CGA_SOMR - Somatic Rank</option>
+							<option value="CGA_SOMS">CGA_SOMS - Somatic Score</option>
+						</param>
+					</when>
+					
+					<when value="CNV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="File with list of genome root directories" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01).">
+									<validator type="empty_field" message="You must supply the list of genome root directories"/>
+								</param>
+							</when>
+						</conditional>
+						
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="CGA_GP">CGA_GP - Normalized mean GC corrected coverage</option>
+							<option value="CGA_NP">CGA_NP - Normalized mean coverage for 2k window</option>
+							<option value="CGA_CP">CGA_CP - Diploid-model ploidy call for segment</option>
+							<option value="CGA_PS">CGA_PS - Diploid-model called ploidy score</option>
+							<option value="CGA_CT">CGA_CT - Diploid-model CNV type</option>
+							<option value="CGA_TS">CGA_TS - Diploid-model CNV type score</option>
+							<option value="CGA_CL">CGA_CL - Nondiploid-model called level</option>
+							<option value="CGA_LS">CGA_LS - Nondiploid-model called level score</option>
+							<option value="CGA_SCL">CGA_SCL - Nondiploid-model somatic called level</option>
+							<option value="CGA_SLS">CGA_SLS - Non-diploid-model somatic called level score</option>
+							<option value="CGA_LAF">CGA_LAF - Lesser Allele Fraction estimate, 100k window</option>
+							<option value="CGA_LLAF">CGA_LLAF - Lesser Allele Fraction lower bound, 100k window</option>
+							<option value="CGA_ULAF">CGA_ULAF - Lesser Allele Fraction upper bound, 100k window</option>
+						</param>
+					</when>
+					
+					<when value="SV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="in" selected="true">imported into Galaxy</option>
+								<option value="out">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="in">
+								<!--form field to select mastervar files-->
+								<repeat name="files" title="SV files" min="1" max="2">
+									<param name="input" type="data" format="tabular" label="Dataset">
+										<validator type="dataset_ok_validator" />
+										<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+										 metadata_name="dbkey" metadata_column="1"
+										 message="cgatools is not currently available for this build."/>
+									</param>
+								</repeat>
+							</when>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="File with list of genome root directories or SV files" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01), or a list of SV files, one per line in the format /path/SVfile (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01/ASM/SV/allJunctionsBeta-GS00000YYYY-ASM.tsv).">
+									<validator type="empty_field" message="You must supply the list of genome root directories or SV files"/>
+								</param>
+							</when>
+						</conditional>
+									
+						<!--form fields junction threshold options-->
+						<param name="jctscore" type="integer" value="10" label="Junction score thresholds (discordant mate pair count) (default 10)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 10" />
+						</param>
+						<param name="jctside" type="integer" value="70" label="Junction side length threshold (default 70)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 70" />
+						</param>
+						<param name="jctdistance" type="integer" value="200" label="Distance tolerance for junction compatibility (default 200)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 200" />
+						</param>
+						<param name="jctlength" type="integer" value="500" label="Length threshold for compatible junctions (default 500)">
+							<validator type="empty_field" message="You must enter a value, for the default value enter 500" />
+						</param>
+				
+						<!--form field to select junction confidence in tumors-->
+						<param name="jctpriority" type="select" label="Use normal junction priority for vcf output?">
+							<option value="" selected="true">no</option>
+							<option value="--jctpriority">yes</option>
+						</param>
+				 
+						<!--form field to select junction confidence in tumors-->
+						<param name="jcttumor" type="select" label="Use high confidence junctions for tumors?">
+							<option value="" selected="true">no</option>
+							<option value="--jcttumor">yes</option>
+						</param>
+						
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+				      <option value="GT">GT - Genotype</option>
+				      <option value="FT">FT - Sample genotype filters</option>
+							<option value="SVTYPE">SVTYPE - Type of structural variation</option>
+							<option value="CGA_BF">CGA_BF - Frequency in set of baseline genomes</option>
+							<option value="CGA_MEDEL">CGA_MEDEL - Mobile element deletion</option>
+							<option value="MATEID">MATEID - ID of mate breakend</option>
+							<option value="CGA_BNDG">CGA_BNDG - Transcript name and strand of genes containing breakend</option>
+							<option value="CGA_BNDGO">CGA_BNDGO - Transcript name and strand of genes containing mate breakend</option>
+							<option value="CGA_BNDP">CGA_BNDP - Precision of breakend</option>
+							<option value="CGA_BNDMPC">CGA_BNDMPC - Mate pair count supporting a breakend</option>
+							<option value="CGA_BNDPOS">CGA_BNDPOS - Position of breakend as detected in individual genome</option>
+							<option value="CGA_BNDDEF">CGA_BNDDEF - Breakend definition in individual genome</option>
+						</param>
+					</when>
+				</conditional>
+			</when>
+
+			<when value="3">
+				<!--form field to select input sources-->
+				<conditional name="sources">
+					<param name="source" type="select" label="Data sources to be included for each genome">
+						<option value="masterVar,CNV" selected="true">masterVar + CNV</option>
+						<option value="masterVar">masterVar</option>
+						<option value="CNV">CNV</option>
+					</param>
+					
+					<when value="masterVar,CNV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to select outside list of genome directories or mastervar files-->
+								<param name="input" type="text" label="File with list of genome root directories" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01).">
+									<validator type="empty_field" message="You must supply the list of genome root directories"/>
+								</param>
+							</when>
+						</conditional>
+					
+						<!--form field to select no-calls-->
+						<param name="nocalls" type="select" label="Include no-calls?">
+							<option value="" selected="true">no</option>
+							<option value="--nocalls">yes</option>
+						</param>
+						
+						<!--form field to enter calibration directory-->
+						<param name="calibration" type="text" size="300" label="Directory calibration data (/path/calibration-root)" help="The directory containing calibration data. For example, there should exist a file calibration-root/0.0.0/metrics.tsv. Calibration data can be downloaded from ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz"/>
+
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="AN">AN - Total number of alleles in called genotypes</option>
+							<option value="AC">AC - Allele count in genotypes</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="CGA_FI">CGA_FI - Functional impact</option>
+							<option value="CGA_PFAM">CGA_PFAM - PFAM domain </option>
+							<option value="CGA_MIRB">CGA_MIRB - miRBaseId</option>
+							<option value="CGA_SDO">CGA_SDO - Depth of overlapping segmental duplications</option>
+							<option value="CGA_RPT">CGA_RPT - Overlapping repeatMasker annotations</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="PS">PS - Phase set</option>
+							<option value="FT">FT - Sample genotype filters</option>
+							<option value="GL">GL - Genotype likelihoods</option>
+							<option value="CGA_CEHQ">CGA_CEHQ - Calibrated haplotype quality based on EAF assumption</option>
+							<option value="CGA_CEGL">CGA_CEGL - Genotype likelihoods based on CEHQ</option>
+							<option value="SS">SS - Somatic status</option>
+							<option value="HQ">HQ - Haplotype quality</option>
+							<option value="EHQ">EHQ - Haplotype quality based on EAF assumption</option>
+							<option value="GQ">GQ - Genotype quality</option>
+							<option value="DP">DP - Total read depth</option>
+							<option value="AD">AD - Allelic depths</option>
+							<option value="CGA_RDP">CGA_RDP - Read depth in reference</option>
+							<option value="CGA_ODP">CGA_ODP - Other total read depth: somatic comparison</option>
+							<option value="CGA_OAD">CGA_OAD - Other allelic depths: somatic comparison</option>
+							<option value="CGA_ORDP">CGA_ORDP - Other reference depth: somatic comparison </option>
+							<option value="CGA_SOMC">CGA_SOMC - Somatic Category</option>
+							<option value="CGA_SOMR">CGA_SOMR - Somatic Rank</option>
+							<option value="CGA_SOMS">CGA_SOMS - Somatic Score</option>
+							<option value="CGA_GP">CGA_GP - Normalized mean GC corrected coverage</option>
+							<option value="CGA_NP">CGA_NP - Normalized mean coverage for 2k window</option>
+							<option value="CGA_CP">CGA_CP - Diploid-model ploidy call for segment</option>
+							<option value="CGA_PS">CGA_PS - Diploid-model called ploidy score</option>
+							<option value="CGA_CT">CGA_CT - Diploid-model CNV type</option>
+							<option value="CGA_TS">CGA_TS - Diploid-model CNV type score</option>
+							<option value="CGA_CL">CGA_CL - Nondiploid-model called level</option>
+							<option value="CGA_LS">CGA_LS - Nondiploid-model called level score</option>
+							<option value="CGA_SCL">CGA_SCL - Nondiploid-model somatic called level</option>
+							<option value="CGA_SLS">CGA_SLS - Non-diploid-model somatic called level score</option>
+							<option value="CGA_LAF">CGA_LAF - Lesser Allele Fraction estimate, 100k window</option>
+							<option value="CGA_LLAF">CGA_LLAF - Lesser Allele Fraction lower bound, 100k window</option>
+							<option value="CGA_ULAF">CGA_ULAF - Lesser Allele Fraction upper bound, 100k window</option>
+						</param>
+					</when>
+					
+					<when value="masterVar">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="in" selected="true">imported into Galaxy</option>
+								<option value="out">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="in">
+								<!--form field to select mastervar files-->
+								<repeat name="files" title="MasterVar files" min="1">
+									<param name="input" type="data" format="cg_mastervar" label="Dataset">
+										<validator type="dataset_ok_validator" />
+										<validator type="dataset_metadata_in_file" filename="cg_crr_files.loc"
+										 metadata_name="dbkey" metadata_column="1"
+										 message="cgatools is not currently available for this build."/>
+									</param>
+								</repeat>
+							</when>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="File with list of genome root directories or masterVar files" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01), or a list of masterVar files, one per line in the format /path/masterVarfile (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01/ASM/masterVarBeta-GS00000YYYY-ASM.tsv.bz2).">
+									<validator type="empty_field" message="You must supply the list of genome root directories or masterVar files"/>
+								</param>
+							</when>
+						</conditional>
+									
+						<!--form field to select no-calls-->
+						<param name="nocalls" type="select" label="Include no-calls?">
+							<option value="" selected="true">no</option>
+							<option value="--nocalls">yes</option>
+						</param>
+						
+						<!--form field to enter calibration directory-->
+						<param name="calibration" type="text" size="300" label="Directory calibration data (/path/calibration-root)" help="The directory containing calibration data. For example, there should exist a file calibration-root/0.0.0/metrics.tsv. Calibration data can be downloaded from ftp://ftp.completegenomics.com/ScoreCalibrationFiles/var-calibration-v2.tgz"/>
+
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="NS">NS - Number of samples</option>
+							<option value="AN">AN - Total number of alleles in called genotypes</option>
+							<option value="AC">AC - Allele count in genotypes</option>
+							<option value="CGA_XR">CGA_XR - External database reference</option>
+							<option value="CGA_FI">CGA_FI - Functional impact</option>
+							<option value="CGA_PFAM">CGA_PFAM - PFAM domain </option>
+							<option value="CGA_MIRB">CGA_MIRB - miRBaseId</option>
+							<option value="CGA_SDO">CGA_SDO - Depth of overlapping segmental duplications</option>
+							<option value="CGA_RPT">CGA_RPT - Overlapping repeatMasker annotations</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="PS">PS - Phase set</option>
+							<option value="FT">FT - Sample genotype filters</option>
+							<option value="GL">GL - Genotype likelihoods</option>
+							<option value="CGA_CEHQ">CGA_CEHQ - Calibrated haplotype quality based on EAF assumption</option>
+							<option value="CGA_CEGL">CGA_CEGL - Genotype likelihoods based on CEHQ</option>
+							<option value="SS">SS - Somatic status</option>
+							<option value="HQ">HQ - Haplotype quality</option>
+							<option value="EHQ">EHQ - Haplotype quality based on EAF assumption</option>
+							<option value="GQ">GQ - Genotype quality</option>
+							<option value="DP">DP - Total read depth</option>
+							<option value="AD">AD - Allelic depths</option>
+							<option value="CGA_RDP">CGA_RDP - Read depth in reference</option>
+							<option value="CGA_ODP">CGA_ODP - Other total read depth: somatic comparison</option>
+							<option value="CGA_OAD">CGA_OAD - Other allelic depths: somatic comparison</option>
+							<option value="CGA_ORDP">CGA_ORDP - Other reference depth: somatic comparison </option>
+							<option value="CGA_SOMC">CGA_SOMC - Somatic Category</option>
+							<option value="CGA_SOMR">CGA_SOMR - Somatic Rank</option>
+							<option value="CGA_SOMS">CGA_SOMS - Somatic Score</option>
+						</param>
+					</when>
+					
+					<when value="CNV">
+						<!--conditional to select inputs-->
+						<conditional name="data_sources">
+							<param name="data_source" type="select" label="Where are the input files?">
+								<option value="out" selected="true">located outside Galaxy (data on server or mounted drive)</option>
+							</param>
+							
+							<when value="out">
+								<!--form field to enter input file-->
+								<param name="input" type="text" label="File with list of genome root directories" size="200" help="Enter file name with full path (/path/file). This file should contain a list of genome root directory names, one per line in the format /path/dir (e.g. /harddrive/GS00000XXXX-DID/GS00000YYYY-ASM/GS00123-DNA_G01).">
+									<validator type="empty_field" message="You must supply the list of genome root directories"/>
+								</param>
+							</when>
+						</conditional>
+						
+						<!--form field to select field names to include in vcf-->
+						<param name="fields" type="select" label="Field names to be included in vcf file" multiple="true" help="Select all field names (default) or a collection of individual field names.">
+							<option value="all" selected="true">-- all (default) --</option>
+							<option value="GT">GT - Genotype</option>
+							<option value="CGA_GP">CGA_GP - Normalized mean GC corrected coverage</option>
+							<option value="CGA_NP">CGA_NP - Normalized mean coverage for 2k window</option>
+							<option value="CGA_CP">CGA_CP - Diploid-model ploidy call for segment</option>
+							<option value="CGA_PS">CGA_PS - Diploid-model called ploidy score</option>
+							<option value="CGA_CT">CGA_CT - Diploid-model CNV type</option>
+							<option value="CGA_TS">CGA_TS - Diploid-model CNV type score</option>
+							<option value="CGA_CL">CGA_CL - Nondiploid-model called level</option>
+							<option value="CGA_LS">CGA_LS - Nondiploid-model called level score</option>
+							<option value="CGA_SCL">CGA_SCL - Nondiploid-model somatic called level</option>
+							<option value="CGA_SLS">CGA_SLS - Non-diploid-model somatic called level score</option>
+							<option value="CGA_LAF">CGA_LAF - Lesser Allele Fraction estimate, 100k window</option>
+							<option value="CGA_LLAF">CGA_LLAF - Lesser Allele Fraction lower bound, 100k window</option>
+							<option value="CGA_ULAF">CGA_ULAF - Lesser Allele Fraction upper bound, 100k window</option>
+						</param>
+					</when>
+				</conditional>
+			</when>
+		</conditional>
+  </inputs>
+
+  <help>
+  
+**What it does**
+
+This tool uses cgatools mkvcf to convert Complete Genomics masterVar files, including CNV, SV and/or MEI data, to vcf format version.
+
+**cgatools 1.6.0 Documentation**
+
+Userguide: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-user-guide.pdf
+
+Release notes: http://cgatools.sourceforge.net/docs/1.6.0/cgatools-release-notes.pdf
+
+**Command line reference**::
+
+		COMMAND NAME
+				mkvcf - Converts var file(s) or masterVar file(s) to VCF.
+		
+		DESCRIPTION
+				Converts var file(s) or masterVar file(s) to VCF.
+		
+		OPTIONS
+			-h [ --help ] 
+						Print this help message.
+		
+			--beta 
+						This is a beta command. To run this command, you must pass the --beta 
+						flag.
+		
+			--reference arg
+						The reference crr file.
+		
+			--output arg (=STDOUT)
+						The output file (may be omitted for stdout).
+		
+			--field-names arg (=GT,PS,NS,AN,AC,SS,FT,CGA_XR,CGA_FI,GQ,HQ,EHQ,CGA_CEHQ,GL,
+							CGA_CEGL,DP,AD,CGA_RDP,CGA_ODP,CGA_OAD,CGA_ORDP,CGA_PFAM,CGA_MIRB,CGA_RPT,
+							CGA_SDO,CGA_SOMC,CGA_SOMR,CGA_SOMS,CGA_GP,CGA_NP,CGA_CP,CGA_PS,CGA_CT,
+							CGA_TS,CGA_CL,CGA_LS,CGA_SCL,CGA_SLS,CGA_LAF,CGA_LLAF,CGA_ULAF,CGA_IS,
+							CGA_IDC,CGA_IDCL,CGA_IDCR,CGA_RDC,CGA_NBET,CGA_ETS,CGA_KES,CGA_BF,
+							CGA_MEDEL,MATEID,SVTYPE,CGA_BNDG,CGA_BNDGO,CGA_BNDMPC,CGA_BNDPOS,CGA_BNDDEF,
+							CGA_BNDP)
+						Comma-separated list of field names. By default, all fields are 
+						included, but you may override this option to ensure only a subset of 
+						the fields is included in the VCF output. For a description of each 
+						field, see the cgatools user guide.
+		
+			--source-names arg (=masterVar,CNV,SV,MEI)
+						Comma-separated list of source names. The following source names are 
+						available:
+							masterVar - Includes records extracted from the masterVar file.
+							CNV       - Includes CNV-related records.
+							SV        - Includes records derived from junctions files.
+							MEI       - Includes records describing mobile element insertions.
+						Some of these source types are only available for more recent pipeline 
+						versions, and some of these source types do not support multi-genome 
+						VCFs. For more information about which source types are available for 
+						which versions of the Complete Genomics pipeline software, see the 
+						cgatools user guide.
+		
+			--genome-root arg
+						For each genome to include in the VCF, the genome root directory, for 
+						example /data/GS00118-DNA_A01; this directory is expected to contain 
+						the ASM and LIB subdirectories, for example. You must supply this 
+						option for each genome in the VCF, unless you are using 
+						--source-names=masterVar and you have specified the --master-var option
+						for each genome in the VCF.
+		
+			--master-var arg
+						For each genome to include in the VCF, the masterVar file. If 
+						genome-roots parameter is given, this parameter defaults to the 
+						masterVar in the given genome-root.
+		
+			--include-no-calls 
+						Small variants VCF records include loci that have no 
+						reference-inconsistent calls.
+						
+			--calibration-root arg
+						The directory containing calibration data. For example, there should 
+						exist a file calibration-root/version0.0.0/metrics.tsv. This option is only 
+						required if CGA_CEHQ or CGA_CEGL are included in the --field-names 
+						parameter.
+		
+			--junction-file arg
+						For each genome to include in the VCF, the junctions file. If 
+						genome-roots parameter is given, this parameter defaults to the 
+						respective junctions file in the export directory.
+		
+			--junction-score-threshold arg (=10)
+						Junction score thresholds (discordant mate pair count).
+		
+			--junction-side-length-threshold arg (=70)
+						Junction side length threshold.
+		
+			--junction-distance-tolerance arg (=200)
+						Distance tolerance for junction compatibility.
+		
+			--junction-length-threshold arg (=500)
+						Length threshold for compatible junctions.
+		
+			--junction-normal-priority 
+						Normal junction priority for vcf output.
+		
+			--junction-tumor-hc 
+						use high confidence junctions for tumors.
+		
+		
+		SUPPORTED FORMAT_VERSION
+				0.3 or later
+  </help>
+</tool>

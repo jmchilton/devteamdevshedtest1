@@ -1,0 +1,17 @@
+#This is a sample file distributed with cgatools repository that enables the cgatools
+#functions to use the .crr reference files. After installation download the reference 
+#genome files form Complete Genomics' ftp site:
+#ftp://ftp.completegenomics.com/ReferenceFiles/build37.crr
+#ftp://ftp.completegenomics.com/ReferenceFiles/build36.crr
+#and edit the path for the reference genomes to correspond to their location.
+#
+#Restart your Galaxy instance to ensure the file locations are registered with Galaxy 
+#properly.
+#
+#The cg_crr_files.loc file has this format (white space characters are TAB characters):
+#
+#<value>	<dbkey>	<name>	<path>
+#
+#hg19	hg19	build 37	/absolute/path/to/build37.crr
+#hg18	hg18	build 36	/absolute/path/to/build36.crr
+
