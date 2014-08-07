@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<tool_dependency>
+    <package name="fastx_toolkit" version="0.0.13">
+        <install version="1.0">
+            <actions_group>
+                <actions architecture="x86_64" os="linux">
+                    <action type="download_by_url">http://depot.galaxyproject.org/package/linux/x86_64/fastx_toolkit/0.0.13.tar.bz2</action>
+                    <action type="move_directory_files">
+                        <source_directory>./bin</source_directory>
+                        <destination_directory>$INSTALL_DIR/bin</destination_directory>
+                    </action>
+                </actions>
+                <actions architecture="i386" os="linux">
+                    <action type="download_by_url">http://depot.galaxyproject.org/package/linux/i386/fastx_toolkit/0.0.13.tar.bz2</action>
+                    <action type="move_directory_files">
+                        <source_directory>./bin</source_directory>
+                        <destination_directory>$INSTALL_DIR/bin</destination_directory>
+                    </action>
+                </actions>
+                <actions architecture="i686" os="linux">
+                    <action type="download_by_url">http://depot.galaxyproject.org/package/linux/i386/fastx_toolkit/0.0.13.tar.bz2</action>
+                    <action type="move_directory_files">
+                        <source_directory>./bin</source_directory>
+                        <destination_directory>$INSTALL_DIR/bin</destination_directory>
+                    </action>
+                </actions>
+                <actions architecture="i386" os="darwin">
+                    <action type="download_by_url">http://depot.galaxyproject.org/package/darwin/i386/fastx_toolkit/0.0.13.tar.bz2</action>
+                    <action type="move_directory_files">
+                        <source_directory>./bin</source_directory>
+                        <destination_directory>$INSTALL_DIR/bin</destination_directory>
+                    </action>
+                </actions>
+                <actions architecture="x86_64" os="darwin">
+                    <action type="download_by_url">http://depot.galaxyproject.org/package/darwin/x86_64/fastx_toolkit/0.0.13.tar.bz2</action>
+                    <action type="move_directory_files">
+                        <source_directory>./bin</source_directory>
+                        <destination_directory>$INSTALL_DIR/bin</destination_directory>
+                    </action>
+                </actions>
+                <actions>
+                    <package name="libgtextutils" version="0.6">
+                        <repository changeset_revision="3f8eeecabf16" name="package_libgtextutils_0_6" owner="devteam" prior_installation_required="True" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+                    </package>
+                    <action type="download_by_url">http://depot.galaxyproject.org/package/source/fastx_toolkit/fastx_toolkit-0.0.13.tar.bz2</action>
+                    <action type="set_environment_for_install">
+                        <repository changeset_revision="3f8eeecabf16" name="package_libgtextutils_0_6" owner="devteam" prior_installation_required="True" toolshed="http://testtoolshed.g2.bx.psu.edu">
+                            <package name="libgtextutils" version="0.6" />
+                        </repository>
+                    </action>
+                    <action type="shell_command">./configure --prefix=$INSTALL_DIR --disable-wall</action>
+                    <action type="shell_command">make &amp;&amp; make install</action>
+                </actions>
+                <action type="set_environment">
+                    <environment_variable action="prepend_to" name="PATH">$INSTALL_DIR/bin</environment_variable>
+                </action>
+            </actions_group>
+        </install>
+        <readme>
+        </readme>
+    </package>
+</tool_dependency>
