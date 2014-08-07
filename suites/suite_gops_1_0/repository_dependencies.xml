@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<repositories description="The gops tool suite.">
+  <repository changeset_revision="3755ee8a74d7" name="basecoverage" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="45fb880ab3bf" name="cluster" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="b4415197029e" name="complement" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="f256537913a1" name="concat" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="6b81ee6c18d3" name="coverage" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="e928e029f6eb" name="flanking_features" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="0c66884f0cac" name="get_flanks" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="d4d33e26deef" name="intersect" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="cb9ed67cb329" name="join" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="10ac6097acdb" name="merge" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="63926e5abb30" name="subtract" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="8a3448727cec" name="subtract_query" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="6ff325b36382" name="tables_arithmetic_operations" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+</repositories>
