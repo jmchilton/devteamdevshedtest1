@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<tool_dependency>
+    <package name="R" version="2.11.0">
+        <repository changeset_revision="df2d1c96d0e9" name="package_r_2_11_0" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+    <package name="bioc_hilbertvis" version="1.18.0">
+        <repository changeset_revision="258868f6a43d" name="package_bioc_hilbertvis_1_18_0" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
