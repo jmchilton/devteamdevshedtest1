@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="clustalw2" version="2.1">
+      <repository changeset_revision="2f10e85b56ab" name="package_clustalw_2_1" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
