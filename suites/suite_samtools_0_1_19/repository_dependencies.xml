@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<repositories description="A suite of Galaxy utilities associated with version 0.1.19 of the SAMTools package.">
+    <repository changeset_revision="c80f65acf51d" name="data_manager_sam_fasta_index_builder" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="38859774da87" name="bam_to_sam" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="36826b2b4096" name="pileup_interval" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="7095d651c95f" name="sam_to_bam" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="f92f13ccee76" name="samtools_flagstat" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="a0af255e28c1" name="samtools_phase" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="75e4b89f1004" name="samtools_rmdup" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="3aa48bcbc599" name="samtools_mpileup" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="e0a8a7f4da76" name="samtools_slice_bam" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+</repositories>
