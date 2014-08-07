@@ -1,0 +1,569 @@
+<tool id="lastz_wrapper_2" name="Lastz" version="1.03.52">
+    <requirements>
+        <requirement type="package" version="1.03.52">lastz</requirement>
+    </requirements>
+    <description> map short reads against reference sequence</description>
+    <command interpreter="python">
+        lastz_wrapper.py
+        --threads="\${GALAXY_SLOTS:-4}"
+        #if str( $seq_name.how_to_name ) == "yes":
+            --ref_name="${seq_name.ref_name}"
+        #end if
+        --ref_source="${source.ref_source}"
+        --source_select="${params.source_select}"
+        --out_format="${out_format}"
+        --input2="${input2}"
+        #if str( $source.ref_source ) == "history":
+            --input1="${source.input1}"
+            --ref_sequences="${input1.metadata.sequences}"
+            --trivial="${source.trivial}"
+        #else if str( $source.ref_source ) == "self":
+            --input1="${input2}"
+            --ref_sequences="${input2.metadata.sequences}"
+            --mirror="${source.mirror}"
+        #else:
+            --input1="${source.input1_2bit.fields.path}"
+            --ref_sequences="None"
+            --trivial="${source.trivial}"
+        #end if
+        --shortcuts_for_yasra="${params.shortcuts_for_yasra}"
+        --strand="${params.strand}"
+        --ambiguous="${params.ambiguous}"
+        #if str( $params.source_select ) == "full":
+            --match_reward="${params.match_reward}"
+            --match_penalty="${params.match_penalty}"
+            --gapped="${params.gapped_extension.gapped}"
+            #if str( $params.gapped_extension.gapped ) == "yes":
+                --gap_open="${params.gapped_extension.gap_open}"
+                --gap_extend="${params.gapped_extension.gap_extend}"
+                --ydrop="${params.gapped_extension.ydrop}"
+                --ytrim="${params.gapped_extension.ytrim}"
+                --gappedthresh="${params.gapped_extension.gappedthresh}"
+                --inner="${params.gapped_extension.inner}"
+            #end if
+            --step="${params.step}"
+            --masking="${params.masking}"
+            --seed="${params.seeding_settings.seed}"
+            #if str( $params.seeding_settings.seed ) == "match":
+                --match_length="${params.seeding_settings.match_length}"
+            #end if
+            --transition="${params.transition}"
+            --xdrop="${params.xdrop}"
+            --hspthresh="${params.hspthresh}"
+            --entropy="${params.entropy}"
+            --chain="${params.chain}"        
+            --filter="${params.back_end_filter.filter}"
+            #if str( $params.back_end_filter.filter ) == "identity":
+                --identity_min="${params.back_end_filter.identity_min}"
+                --identity_max="${params.back_end_filter.identity_max}"
+            #else if str( $params.back_end_filter.filter ) == "coverage":
+                --coverage_min="${params.back_end_filter.coverage_min}"
+                --coverage_max="${params.back_end_filter.coverage_max}"
+            #else if str( $params.back_end_filter.filter ) == "nmatch":
+                --nmatch_min="${params.back_end_filter.nmatch_min}"
+            #else if str( $params.back_end_filter.filter ) == "nmismatch":
+                --nmismatch_max="${params.back_end_filter.nmismatch_max}"
+            #end if
+        #end if
+        --output="${output1}"
+        --lastzSeqsFileDir="${GALAXY_DATA_INDEX_DIR}"
+    </command>
+    <inputs>
+        <param name="input2" format="fasta" type="data" label="Align sequencing reads in" />
+        <conditional name="source">
+            <param name="ref_source" type="select" label="Against reference sequences that are">
+                <option value="cached">locally cached</option>
+                <option value="history">in your history</option>
+                <option value="self">in self</option>
+            </param>
+            <when value="cached">
+                <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
+                    <options from_data_table="lastz_seqs" />
+                </param>
+                <param name="trivial" type="select" label="Output a trivial self-alignment block if the target and query sequences are identical">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </param>
+            </when>
+            <when value="history">
+                <param name="input1" type="data" format="fasta" label="Select a reference dataset" />
+                <param name="trivial" type="select" label="Output a trivial self-alignment block if the target and query sequences are identical">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </param>
+            </when>
+            <when value="self">
+                <param name="mirror" type="select" label="Report mirror image of all gap-free alignments?" help="If no, only one copy of each meaningful alignment block in a self-alignment will be produced">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </param>
+            </when>
+        </conditional>
+        <param name="out_format" type="select" label="Output format">
+            <option value="sam">SAM</option>
+            <option value="diffs">Polymorphisms</option>
+            <option value="tabular">Tabular</option>
+        </param>
+        <conditional name="params">
+            <param name="source_select" type="select" label="Lastz settings to use" help="For most mapping needs use Commonly used settings. If you want full control use Full List">
+                <option value="pre_set">Commonly used</option>
+                <option value="full">Full Parameter List</option>
+            </param>
+            <when value="pre_set">
+                <param name="strand" type="select" label="Strand to search">
+                    <option value="both">Both</option>
+                    <option value="plus">Search forward strand only (the one in the reference)</option>
+                    <option value="minus">Search the reverse complement strand only (opposite of the reference)</option>
+                </param>
+                <param name="ambiguous" type="select" label="Treat as ambiguous nucleotides?">
+                    <option value="no">No</option>
+                    <option value="n">Treat N as an ambiguous nucleotide</option>
+                    <option value="iupac">Treat any IUPAC-IUB as a completely ambiguous nucleotide</option>
+                </param>
+                <param name="shortcuts_for_yasra" type="select" label="Select mapping mode">
+                    <option value="none">Do not set</option>
+                    <option value="yasra98">Roche-454 98% identity</option>
+                    <option value="yasra95">Roche-454 95% identity</option>
+                    <option value="yasra90">Roche-454 90% identity</option>
+                    <option value="yasra85">Roche-454 85% identity</option>
+                    <option value="yasra75">Roche-454 75% identity</option>
+                    <option value="yasra95short">Illumina 95% identity</option>
+                    <option value="yasra85short">Illumina 85% identity</option>
+                </param>
+            </when>
+            <when value="full">
+                <param name="strand" type="select" label="Strand to search">
+                    <option value="both">Both</option>
+                    <option value="plus">Search forward strand only (the one in the reference)</option>
+                    <option value="minus">Search the reverse complement strand only (opposite of the reference)</option>
+                </param>
+                <param name="ambiguous" type="select" label="Treat as ambiguous nucleotides?">
+                    <option value="no">No</option>
+                    <option value="n">Treat N as an ambiguous nucleotide</option>
+                    <option value="iupac">Treat any IUPAC-IUB as a completely ambiguous nucleotide</option>
+                </param>
+                <param name="shortcuts_for_yasra" type="select" label="Select mapping mode">
+                    <option value="none">Do not set</option>
+                    <option value="yasra98">Roche-454 98% identity</option>
+                    <option value="yasra95">Roche-454 95% identity</option>
+                    <option value="yasra90">Roche-454 90% identity</option>
+                    <option value="yasra85">Roche-454 85% identity</option>
+                    <option value="yasra75">Roche-454 75% identity</option>
+                    <option value="yasra95short">Illumina 95% identity</option>
+                    <option value="yasra85short">Illumina 85% identity</option>
+                </param>
+                <param name="match_reward" type="integer" size="10" value="" optional="true" label="Score values for a match (reward)">
+                    <validator type="in_range" message="Positive integer required" min="1" />
+                </param>
+                <param name="match_penalty" type="integer" size="10" value="" optional="true" label="Score values for a mismatch (penalty)" help="same as reward when not specified (but reward is)">
+                    <validator type="in_range" message="Positive integer required" min="1" />
+                </param>
+                <conditional name="gapped_extension">
+                    <param name="gapped" type="select" label="Perform gapped extension of HSPs (or seeds if gapped-free extension is not performed)?" help="after first reducing them to anchor points">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </param>
+                    <when value="yes">
+                        <param name="gap_open" type="integer" size="10" value="" optional="true" label="Score penalties for opening a gap">
+                            <validator type="in_range" message="Positive integer required" min="1" />
+                        </param>
+                        <param name="gap_extend" type="integer" size="10" value="" optional="true" label="Score penalties for extending a gap">
+                            <validator type="in_range" message="Positive integer required" min="1" />
+                        </param>
+                        <param name="ydrop" type="integer" size="10" value="" optional="true" label="y-drop threshold for terminating gapped extension" help="Restricts the end points of each local alignment">
+                            <validator type="in_range" message="Positive integer required" min="1" />
+                        </param>
+                        <param name="ytrim" type="select" label="Trim back to peak score if y-drop extension encounters end of sequence">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </param>
+                        <param name="gappedthresh" type="integer" size="10" value="" optional="true" label="Threshold for gapped extension" help="Alignments scoring lower are discarded">
+                            <validator type="in_range" message="Positive integer required" min="1" />
+                        </param>
+                        <param name="inner" type="integer" size="10" value="" optional="true" label="Perform additional alignment between the gapped alignment blocks" help="using presumably more sensitive alignment parameters">
+                            <validator type="in_range" message="Positive integer required" min="1" />
+                        </param>
+                    </when>
+                </conditional>
+                <param name="step" type="integer" size="10" value="" optional="true" label="Offset between the starting positions of successive target words considered for potential seeds">
+                    <validator type="in_range" message="Positive integer required" min="1" />
+                </param>
+                <param name="masking" type="integer" size="10" value="0" label="Dynamically mask the target sequence" help="Zero indicates no masking">
+                    <validator type="in_range" message="Non-negative integer required" min="0" />
+                </param>
+                <conditional name="seeding_settings">
+                    <param name="seed" type="select" label="Select seeding hit settings" help="allows you set word size and number of mismatches">
+                        <option value="no">No</option>
+                        <option value="match">Set length of bp word with matches in all positions</option>
+                        <option value="12of19">Require a 19 bp word with matches in 12 specific positions</option>
+                    </param>
+                    <when value="match">
+                        <param name="match_length" type="integer" size="10" value="" label="Length of bp word with matches in all positions">
+                            <validator type="in_range" message="Positive integer required" min="1" />
+                        </param>
+                    </when>
+                </conditional>
+                <param name="transition" type="select" label="Select transition settings" help="affects the number of allowed transition substitutions">
+                    <option value="0">Don't allow any transitions in seed hits</option>
+                    <option value="1">Allow one transition in each seed hit</option>
+                    <option value="2">Allow two transitions in each seed hit</option>
+                </param>
+                <param name="xdrop" type="integer" size="10" value="" optional="true" label="x-drop extension termination threshold" help="find HSPs using the x-drop extension method with this termination threshold">
+                    <validator type="in_range" message="Positive integer required" min="1" />
+                </param>
+                <param name="hspthresh" type="integer" size="10" value="" optional="true" label="Score threshold for the x-drop extension method" help="HSPs scoring lower are discarded">
+                    <validator type="in_range" message="Positive integer required" min="1" />
+                </param>
+                <param name="entropy" type="select" label="Adjust for entropy when qualifying HSPs in the x-drop extension method">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </param>
+                <param name="chain" type="select" label="Perform chaining of HSPs with no penalties">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </param>
+                <conditional name="back_end_filter">
+                    <param name="filter" type="select" label="Filter alignments">
+                        <option value="no">No</option>
+                        <option value="identity">by their percent identity</option>
+                        <option value="coverage">by how much of the input sequence they cover</option>
+                        <option value="nmatch">by how many bases match</option>
+                        <option value="nmismatch">by the number of mismatches</option>
+                    </param>
+                    <when value="identity">
+                        <param name="identity_min" type="integer" size="10" value="0" label="Minimum percentage identity">
+                            <validator type="in_range" message="Non-negative integer required" min="0" max="100" />
+                        </param>
+                        <param name="identity_max" type="integer" size="10" value="" optional="true" label="Maximum percentage identity">
+                            <validator type="in_range" message="Non-negative integer required" min="0" max="100" />
+                        </param>
+                    </when>
+                    <when value="coverage">
+                        <param name="coverage_min" type="integer" size="10" value="0" label="Minimum percentage coverage">
+                            <validator type="in_range" message="Non-negative integer required" min="0" max="100" />
+                        </param>
+                        <param name="coverage_max" type="integer" size="10" value="" optional="true" label="Maximum percentage coverage">
+                            <validator type="in_range" message="Non-negative integer required" min="0" max="100" />
+                        </param>
+                    </when>
+                    <when value="nmatch">
+                        <param name="nmatch_min" type="integer" size="10" value="0" label="Minimum percentage of query length for matching bases">
+                            <validator type="in_range" message="Non-negative integer required" min="0" max="100" />
+                        </param>
+                    </when>
+                    <when value="nmismatch">
+                        <param name="nmismatch_max" type="integer" size="10" value="0" label="Maximum number of mismatched bases">
+                            <validator type="in_range" message="Non-negative integer required" min="0" />
+                        </param>
+                    </when>
+                </conditional>
+            </when>
+        </conditional>
+        <conditional name="seq_name">
+            <param name="how_to_name" type="select" label="Modify the reference name?">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value="yes">
+                <param name="ref_name" type="text" size="25" value="Type sequence name here" label="Enter name for the Reference sequence"/>
+            </when>
+            <when value="no" />
+        </conditional>
+    </inputs>
+    <outputs>
+        <data format="tabular" name="output1" label="${tool.name} on ${on_string}: mapped reads">
+            <change_format>
+                <when input="out_format" value="sam" format="sam" />
+            </change_format>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <!--
+            Since the input file include more than 1 sequence, the output must be sorted in 
+            order for functional test to pass.  This is done using the sort="True" attribute on the output.
+            
+            The output1 file for this test was produced using the following command line call produced by the lastz_wrapper.py script:
+            GALAXY_SLOTS="1"; export GALAXY_SLOTS;
+            PACKAGE_BASE=/tool_dependencies/lastz/1.03.52/devteam/lastz/ccc73a16422f; export PACKAGE_BASE;
+            . /Users/gvk/workspace/tool_dependencies/lastz/1.03.52/devteam/lastz/ccc73a16422f/env.sh;
+            python /localhost/repos/devteam/lastz/ccc73a16422f/lastz/lastz_wrapper.py
+                \-\-threads="${GALAXY_SLOTS:-4}"
+                \-\-ref_source="history"
+                \-\-source_select="pre_set"
+                \-\-out_format="sam"
+                \-\-input2="b1.fasta"
+                \-\-input1="phiX_split.fasta"
+                \-\-ref_sequences="2" \-\-trivial="yes"
+                \-\-shortcuts_for_yasra="none"
+                \-\-strand="both"
+                \-\-ambiguous="no"
+                \-\-output="/database/files/000/dataset_XX.dat"
+                \-\-lastzSeqsFileDir="/galaxy-central/tool-data"
+            
+            From the command line without using Galaxy, the above command would probably be something like this:
+            lastz b1.fasta[multiple] phiX_split.fasta \-\-format="sam" \-\-strand="both" \-\-output="lastz_wrapper_out0.sam"
+            -->
+            <param name="input2" value="b1.fasta" ftype="fasta" />
+            <param name="ref_source" value="history" />
+            <param name="input1" value="phiX_split.fasta" ftype="fasta"  />
+            <param name="trivial" value="yes" />
+            <param name="out_format" value="sam" />
+            <param name="source_select" value="pre_set" />
+            <param name="strand" value="both" />
+            <param name="ambiguous" value="no" />
+            <param name="how_to_name" value="no" />
+            <output name="output1" file="lastz_wrapper_out0.sam" sort="True" />
+        </test>
+        <test>
+            <!--
+            GALAXY_SLOTS="1"; export GALAXY_SLOTS;
+            PACKAGE_BASE=/tool_dependencies/lastz/1.03.52/devteam/lastz/ccc73a16422f; export PACKAGE_BASE;
+            . /tool_dependencies/lastz/1.03.52/devteam/lastz/ccc73a16422f/env.sh;
+            python /localhost/repos/devteam/lastz/ccc73a16422f/lastz/lastz_wrapper.py
+                \-\-threads="${GALAXY_SLOTS:-4}"
+                \-\-ref_source="history"
+                \-\-source_select="full"
+                \-\-out_format="sam"
+                \-\-input2="b1.fasta"
+                \-\-input1="phiX_split.fasta"
+                \-\-ref_sequences="2"
+                \-\-trivial="no"
+                \-\-shortcuts_for_yasra="none"
+                \-\-strand="plus"
+                \-\-ambiguous="no"
+                \-\-match_reward=""
+                \-\-match_penalty=""
+                \-\-gapped="no"
+                \-\-step=""
+                \-\-masking="0"
+                \-\-seed="no"
+                \-\-transition="1"
+                \-\-xdrop=""
+                \-\-hspthresh=""
+                \-\-entropy="no"
+                \-\-chain="no"
+                \-\-filter="identity"
+                \-\-identity_min="0"
+                \-\-identity_max="100"
+                \-\-output="/database/files/000/dataset_XX.dat"
+                \-\-lastzSeqsFileDir="/galaxy-central/tool-data"
+            -->
+            <param name="input2" value="b1.fasta" ftype="fasta" />
+            <param name="ref_source" value="history" />
+            <param name="input1" value="phiX_split.fasta" ftype="fasta"  />
+            <param name="trivial" value="no" />
+            <param name="out_format" value="sam" />
+            <param name="source_select" value="full" />
+            <param name="strand" value="plus" />
+            <param name="seed" value="12of19" />
+            <param name="transition" value="1" />
+            <param name="entropy" value="no" />
+            <param name="chain" value="no" />
+            <param name="filter" value="identity" />
+            <param name="identity_min" value="0" />
+            <param name="identity_max" value="100" />
+            <output name="output1" file="lastz_wrapper_out1.sam" />
+        </test>
+    </tests>
+    <help>
+        
+**What it does**
+        
+**LASTZ** is a high performance pairwise sequence aligner derived from BLASTZ. It is written by Bob Harris in Webb Miller's laboratory at Penn State University. Special scoring sets were derived to improve runtime performance and quality. This Galaxy version of LASTZ is geared towards aligning short (Illumina/Solexa, AB/SOLiD) and medium (Roche/454) reads against a reference sequence. There is excellent, extensive documentation on LASTZ available here_.
+
+ .. _here: http://www.bx.psu.edu/miller_lab/dist/README.lastz-1.02.00/README.lastz-1.02.00.html
+ 
+------
+
+**Input formats**
+
+LASTZ accepts reference and reads in FASTA format. However, because Galaxy supports implicit format conversion the tool will recognize fastq and other method specific formats.
+
+------
+
+**Outputs**
+
+LASTZ generates one output. Depending on the choice you make in the *Select output format* drop-down, LASTZ will produce a SAM file showing sequence alignments, a list of differences between the reads and reference (Polymorphisms), or a general table with one line per alignment block (Tabular). Examples of these outputs are shown below.
+
+**SAM output**
+
+SAM has 12 columns::
+
+                                   1     2     3         4   5    6  7         8     9                                    10                                     11  12
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  HWI-EAS91_1_30788AAXX:1:2:1670:915    99  chr9  58119878  60  36M  =  58120234   392  GACCCCTACCCCACCGTGCTCTGGATCTCAGTGTTT   IIIIIIIIIIIIIIIIEIIIIIII7IIIIIIIIIII  XT:A:U  NM:i:0  SM:i:37  AM:i:37  X0:i:1  X1:i:0  XM:i:0  XO:i:0  XG:i:0  MD:Z:36
+  HWI-EAS91_1_30788AAXX:1:2:1670:915   147  chr9  58120234  60  36M  =  58119878  -392  ATGAGTCGAATTCTATTTTCCAAACTGTTAACAAAA   IFIIDI;IIICIIIIIIIIIIIIIIIIIIIIIIIII  XT:A:U  NM:i:0  SM:i:37  AM:i:37  X0:i:1  X1:i:0  XM:i:0  XO:i:0  XG:i:0  MD:Z:36
+
+
+where::
+
+     Column  Description
+  ---------  ---------------------------------------------------------------------   
+   1. QNAME  Query (pair) NAME
+   2. FLAG   bitwise FLAG
+   3. RNAME  Reference sequence NAME
+   4. POS    1-based leftmost POSition/coordinate of clipped sequence
+   5. MAPQ   MAPping Quality (Phred-scaled)
+   6. CIGAR  extended CIGAR string
+   7. MRNM   Mate Reference sequence NaMe ('=' if same as RNAME)
+   8. MPOS   1-based Mate POSition
+   9. ISIZE  Inferred insert SIZE
+  10. SEQ    query SEQuence on the same strand as the reference
+  11. QUAL   query QUALity (ASCII-33 gives the Phred base quality)
+  12. OPT    variable OPTional fields in the format TAG:VTYPE:VALUE, tab-separated
+  
+The flags are as follows::
+
+    Flag  Description
+  ------  -------------------------------------
+  0x0001  the read is paired in sequencing
+  0x0002  the read is mapped in a proper pair
+  0x0004  the query sequence itself is unmapped
+  0x0008  the mate is unmapped
+  0x0010  strand of the query (1 for reverse)
+  0x0020  strand of the mate
+  0x0040  the read is the first read in a pair
+  0x0080  the read is the second read in a pair
+  0x0100  the alignment is not primary
+
+**Polymorphism (SNP or differences) output**
+
+Polymorphism output contains 14 columns::
+
+     1     2     3  4     5                                   6   7   8  9  10  11 12                                   13                                    14
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------
+  chrM  2490  2491  +  5386  HWI-EAS91_1_306UPAAXX:6:1:486:822   10  11  -  36  C  A  ACCTGTTTTACAGACACCTAAAGCTACATCGTCAAC  ACCTGTTTTAAAGACACCTAAAGCTACATCGTCAAC
+  chrM  2173  2174  +  5386  HWI-EAS91_1_306UPAAXX:6:1:259:1389  26  27  +  36  G  T  GCGTACTTATTCGCCACCATGATTATGACCAGTGTT  GCGTACTTATTCGCCACCATGATTATTACCAGTGTT
+
+where::
+
+  1. (chrM)   - Reference sequence id
+  2. (2490)   - Start position of the difference in the reference
+  3. (2491)   - End position of the difference in the reference
+  4. (+)      - Strand of the reference (always plus)
+  5. (5386)   - Length of the reference sequence
+  6. (HWI...) - read id
+  7. (10)     - Start position of the difference in the read
+  8. (11)     - End position of the difference in the read
+  9. (+)      - Strand of the read
+ 10. (36)     - Length of the read
+ 11. (C)      - Nucleotide in the reference
+ 12. (A)      - Nucleotide in the read
+ 13. (ACC...) - Reference side os the alignment
+ 14. (ACC...) - Read side of the alignment
+ 
+**Tabular output**
+
+Tabular output is a tab-separated format with 30 columns::
+
+   1        2  3     4     5     6     7   8                 9              10  11   12   13   14   15   16   17   18  19                20                21   22     23      24      25    26    27    28    29  30
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  14  PHIX174  +  5386  4648  4647  4661  14  ATTTTCGTGATATT    EYKX4VC01BV8HS  +   204  154  153  167  154  153  167  14  ATTTTCGTGATATT    ..............    14M  14/14  100.0%  14/204  6.9%  0/14  0.0%  4494  NA
+  16  PHIX174  +  5386  3363  3362  3378  16  GACGCCGGATTTGAGA  EYKX4VC01AWJ88  -   259   36   35   51  209  208  224  16  GACGCCGGATTTGAGA  ................  16M  16/16  100.0%  16/259  6.2%  0/16  0.0%  3327  NA
+
+The following columns are present::
+
+             Field  Meaning
+  ----------------  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+   1.        score  Score of the alignment block. The scale and meaning of this number will vary, depending on the final stage performed and other command-line options.
+   2.        name1  Name of the target sequence.
+   3.      strand1  Target sequence strand, either "+" or "−".
+   4.        size1  Size of the entire target sequence.
+   5.       start1  Starting position of the alignment block in the target, origin-one.
+   6.      zstart1  Starting position of the alignment block in the target, origin-zero.
+   7.         end1  Ending position of the alignment block in the target, expressed either as origin-one closed or origin-zero half-open (the ending value is the same in both systems).
+   8.      length1  Length of the alignment block in the target (excluding gaps).
+   9.        text1  Aligned characters in the target, including gap characters.
+  10.        name2  Name of the query sequence.
+  11.      strand2  Query sequence strand, either "+" or "−".
+  12.        size2  Size of the entire query sequence.
+  13.       start2  Starting position of the alignment block in the query, origin-one.
+  14.      zstart2  Starting position of the alignment block in the query, origin-zero.
+  15.         end2  Ending position of the alignment block in the query, expressed either as origin-one closed or origin-zero half-open (the ending value is the same in both systems).
+  16.      start2+  Starting position of the alignment block in the query, counting along the query sequence's positive strand (regardless of which query strand was aligned), origin-one. Note that if strand2 is "−", then this is the other end of the block from start2.
+  17.     zstart2+  Starting position of the alignment block in the query, counting along the query sequence's positive strand (regardless of which query strand was aligned), origin-zero. Note that if strand2 is "−", then this is the other end of the block from zstart2.
+  18.        end2+  Ending position of the alignment block in the query, counting along the query sequence's positive strand (regardless of which query strand was aligned), expressed either as origin-one closed or origin-zero half-open (the ending value is the same in both systems). Note that if strand2 is "−", then this is the other end of the block from end2.
+  19.      length2  Length of the alignment block in the query (excluding gaps).
+  20.        text2  Aligned characters in the query, including gap characters.
+  21.         diff  Differences between what would be written for text1 and text2. Matches are written as . (period), transitions as : (colon), transversions as X, and gaps as - (hyphen).
+  22.        cigar  A CIGAR-like representation of the alignment's path through the Dynamic Programming matrix. This is the short representation, without spaces, described in the Ensembl CIGAR specification.
+  23./24. identity  Fraction of aligned bases in the block that are matches (see Identity). This is written as two fields. The first field is a fraction, written as &lt;n&gt;/&lt;d&gt;. The second field contains the same value, computed as a percentage.
+  25./26. coverage  Fraction of the entire input sequence (target or query, whichever is shorter) that is covered by the alignment block (see Coverage). This is written as two fields. The first field is a fraction, written as &lt;n&gt;/&lt;d&gt;. The second field contains the same value, computed as a percentage.
+  27./28.  gaprate  Rate of gaps (also called indels) in the alignment block. This is written as two fields. The first field is a fraction, written as &lt;n&gt;/&lt;d&gt;, with the numerator being the number of alignment columns containing gaps and the denominator being the number without gaps. The second field contains the same value, computed as a percentage.
+  29.     diagonal  The diagonal of the start of the alignment block in the dynamic programming matrix, expressed as an identifying number start1-start2.
+  30.      shingle  A measurement of the shingle overlap between the target and the query. This is intended for the case where both the target and query are relatively short, and their ends are expected to overlap.  
+
+-------
+
+**LASTZ Settings**
+
+There are two setting modes: (1) **Commonly used settings** and (2) **Full Parameter List**.
+
+**Commonly used settings**
+
+There are seven modes::
+
+  Illumina-Solexa/AB-SOLiD 95% identity
+  Illumina-Solexa/AB-SOLiD 85% identity
+  Roche-454 98% identity
+  Roche-454 95% identity
+  Roche-454 90% identity
+  Roche-454 85% identity
+  Roche-454 75% identity
+
+When deciding which one to use, consider the following: a 36 bp read with two differences will be 34/36 = 94% identical to the reference.  
+
+**Full Parameter List**
+
+This mode gives you fuller control over lastz. The description of these and other parameters is found at the end of this page. Note that not all parameters are included in this interface. If you would like to make additional options available through Galaxy, e-mail us at galaxy-bugs@bx.psu.edu.
+
+------
+
+**Modify the reference name?**
+
+This option allows you to set the name of the reference sequence manually. This is helpful when, for example, you would like to make the reference name compatible with the UCSC naming conventions to be able to display your lastz results as a custom track at the UCSC Genome Browser.
+
+------
+
+**LASTZ parameter list**
+
+This is the list of LASTZ options that are available in this interface::
+
+  target                         File containing target sequence (fasta or nib).
+  query                          File containing query sequences (fasta or nib).
+  --self                         The selected target is the file containing both the target sequence and query sequences.
+  --nomirror                     Do not report mirror image of all gap-free alignments (default is "mirror" for self-alignments only).
+  --strand=both                  Search both strands.
+  --strand=plus                  Search + strand only (matching strand of query spec).
+  --strand=minus                 Search - strand only (opposite strand of query spec) (default is both strands are searched).
+  --match=&lt;reward&gt;[,&lt;penalty&gt;]   Set the score values for a match (+&lt;reward&gt;) and mismatch (-&lt;penalty&gt;).
+  --gapped                       Perform gapped extension of HSPs (or seeds if gap-free extension is not performed) after first reducing them to anchor points.
+  --nogapped                     Skip the gapped extension stage.
+  --gap=&lt;[open,]extend&gt;          Set gap open and extend penalties.  This option is valid only if gapped extension is being performed.
+  --ambiguous=n                  Treat N as an ambiguous nucleotide (default is N is treated as a sequence splicing character).
+  --ambiguous=iupac              Treat any ambiguous IUPAC-IUB character as a completely ambiguous nucleotide.
+  --step=&lt;offset&gt;                Offset between the starting positions of successive target words considered for potential seeds.  This does not apply to the query words which always use a step size of 1.
+  --masking=&lt;count&gt;              Dynamically mask the target sequence by excluding any positions that appear in too many alignments from further consideration for seeds.
+  --seed=12of19                  Seeds require a 19 bp word with matches in 12 specific positions.
+  --seed=match&lt;length&gt;           Seeds require a &lt;length&gt; bp word with matches in all positions.
+  --transition[=1,2]             Allow one or two transitions in a seed hit (default is that a transition is allowed).
+  --notransition                 Don't allow any match positions in seeds to be satisfied by transitions.
+  --xdrop=&lt;dropoff&gt;                Find HSPs using the xdrop extension method with the given termination threshold instead of using the exact match method.
+  --hspthresh=&lt;score&gt;            Set the score threshold for the x-drop extension method.  HSPs scoring lower are discarded.
+  --entropy                      Adjust for entropy when qualifying HSPs in the x-drop extension method.
+  --noentropy                    Don't adjust for entropy when qualifying HSPs in the x-drop extension method.
+  --chain                        Perform chaining of HSPs with no penalties.
+  --nochain                      Don't perform chaining of HSPs with no penalties.
+  --ydrop=&lt;dropoff&gt;              Set the threshold for terminating gapped extension.  This restricts the endpoints of each local alignment by limiting the local region around each anchor in which extension is performed.
+  --ytrim                        Trim back to peak score if y-drop extension encounters end of sequence.
+  --noytrim                      Don't trim back to peak score if y-drop extension encounters end of sequence.
+  --gappedthresh=&lt;score&gt;         Threshold for gapped extension.  Alignments scoring lower are discarded.
+  --filter=identity=&lt;min&gt;[..&lt;max&gt;]      Filter alignments by their percent identity, 0&lt;=min&lt;=max&lt;=100.  Identity is the percentage of aligned bases that are matches.
+  --filter=coverage=&lt;min&gt;[..&lt;max&gt;]      Filter alignments by how much of the input sequence they cover, 0&lt;=min&lt;=max&lt;=100.  Coverage is the percentage of the [shorted of the] entire target or query sequence included in the alignment block.
+  --filter=nmatch&lt;min&gt;     Filter alignments by how many bases match with the threshold specified as a percentage of the query length.
+  --filter=nmismatch0..&lt;max&gt;     Filter alignments by the number of mismatches, allowing no more than &lt;max&gt; mismatched bases.
+  --notrivial                    Don't output a trivial self-alignment block if the target and query sequences are identical.
+  --inner=&lt;score&gt;                Perform additional alignment between the gapped alignment blocks using (presumably) more sensitive alignment parameters.
+    </help>
+</tool>

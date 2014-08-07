@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tool_dependency>
+    <package name="lastz" version="1.03.52">
+        <repository changeset_revision="03a5b2d4c273" name="package_lastz_1_03_52" owner="iuc" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
