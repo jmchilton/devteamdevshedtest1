@@ -1,0 +1,81 @@
+<tool name="FilterSamReads" id="picard_FilterSamReads" version="1.106.0">
+<description>Includes or excludes aligned reads or a list of reads from a BAM or SAM file</description>
+<requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  <command interpreter="bash">
+        generic_outformat_wrapper.sh FilterSamReads $outFile $outputFormat
+          FILTER="${conditionfilter.Filter}"
+          INPUT=$input_file
+          #if $conditionfilter.Filter == "includeReadList" or $conditionfilter.Filter == "excludeReadList" :
+          	#if str( $READ_LIST_FILE ):
+              READ_LIST_FILE="${READ_LIST_FILE}"
+          	#end if
+          #end if
+          
+          #if str( $SORT_ORDER ):
+              SORT_ORDER="${SORT_ORDER}"
+          #end if
+
+ 
+      VALIDATION_STRINGENCY=LENIENT
+      QUIET=True
+      TMP_DIR="${__new_file_path__}" 
+  </command>
+   
+  <stdio>
+    <exit_code range="0" level="warning" description="Tool finished correctly" />
+  </stdio>
+   
+  <inputs>
+  		<param format="bam,sam" name="input_file" type="data" label="SAM/BAM dataset that will be filterd" help="If empty, upload or import a SAM/BAM dataset."/>
+  		<conditional name="conditionfilter">
+  			<param name="Filter" type="select" help="Required. Possible values: {includeAligned [OUTPUT SAM/BAM will contain aligned reads only. INPUT SAM/BAM must be in queryname SortOrder. (Note that *both* first and second of paired reads must be aligned to be included in the OUTPUT SAM or BAM)], excludeAligned [OUTPUT SAM/BAM will contain un-mapped reads only. INPUT SAM/BAM must be in queryname SortOrder. (Note that *both* first and second of pair must be aligned to be excluded from the OUTPUT SAM or BAM)], includeReadList [OUTPUT SAM/BAM will contain reads that are supplied in the READ_LIST_FILE file], excludeReadList [OUTPUT bam will contain reads that are *not* supplied in the READ_LIST_FILE file]}"
+         label="Filter">
+        		<option value="includeAligned" selected ="true">includeAligned</option>
+        		<option value="excludeAligned">excludeAligned</option>
+        		<option value="includeReadList">includeReadList</option>
+        		<option value="excludeReadList">excludeReadList</option>
+      	</param>
+      	<when value="includeReadList">
+      		<param format="data" name="READ_LIST_FILE" type="data" label="Read List File containing reads that will be included or excluded from the OUTPUT SAM or BAM file. Default value: null." help="" />
+      	</when>
+      	<when value="excludeReadList">
+      		<param format="data" name="READ_LIST_FILE" type="data" label="Read List File containing reads that will be included or excluded from the OUTPUT SAM or BAM file. Default value: null." help="" />
+      	</when>
+      </conditional>
+      
+      <param name="SORT_ORDER" value="Sort order" type="text" label="SortOrder of the OUTPUT SAM or BAM file, otherwise use the SortOrder of the INPUT file. Default value: null." help="Possible values: {unsorted, queryname, coordinate}" size="100" />
+      
+ <param name="allowIncDictConcord" type="boolean" checked="False" truevalue="true" falsevalue="false" label="Allow incomplete dict concordance?" help="Allows a partial overlap of the BAM contigs with the new reference sequence contigs." />      
+      
+     
+       <param name="outputFormat" type="boolean" checked="True" truevalue="bam" falsevalue="sam" label="Output BAM instead of SAM" help="Uncheck for SAM output" />
+     
+  </inputs>
+  
+  <outputs>
+    <data name="outFile" format="bam" label="${tool.name} on ${on_string}: filtered ${outputFormat}">
+      <change_format>
+        <when input="outputFormat" value="sam" format="sam" />
+      </change_format>
+    </data>
+  </outputs>  
+
+  <help>
+Picard documentation says:
+ 
+  
+FilterSamReads
+
+Produces a new SAM or BAM file by including or excluding aligned reads or a list of reads names supplied in the READ_LIST_FILE from the INPUT SAM or BAM file.
+
+Option	Description
+INPUT=File	The SAM or BAM file that will be filtered. Required.
+FILTER=Filter	Filter. Required. Possible values: {includeAligned [OUTPUT SAM/BAM will contain aligned reads only. INPUT SAM/BAM must be in queryname SortOrder. (Note that *both* first and second of paired reads must be aligned to be included in the OUTPUT SAM or BAM)], excludeAligned [OUTPUT SAM/BAM will contain un-mapped reads only. INPUT SAM/BAM must be in queryname SortOrder. (Note that *both* first and second of pair must be aligned to be excluded from the OUTPUT SAM or BAM)], includeReadList [OUTPUT SAM/BAM will contain reads that are supplied in the READ_LIST_FILE file], excludeReadList [OUTPUT bam will contain reads that are *not* supplied in the READ_LIST_FILE file]}
+READ_LIST_FILE=File	Read List File containing reads that will be included or excluded from the OUTPUT SAM or BAM file. Default value: null.
+SORT_ORDER=SortOrder	SortOrder of the OUTPUT SAM or BAM file, otherwise use the SortOrder of the INPUT file. Default value: null. Possible values: {unsorted, queryname, coordinate}
+WRITE_READS_FILES=Boolean	Create .reads files (for debugging purposes) Default value: true. This option can be set to 'null' to clear the default value. Possible values: {true, false}
+OUTPUT=File	SAM or BAM file to write read excluded results to Required. 
+
+ 
+  </help>
+</tool>

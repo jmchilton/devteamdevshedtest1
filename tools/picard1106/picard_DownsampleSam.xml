@@ -1,0 +1,64 @@
+<tool name="Downsample SAM/BAM" id="picard_DownsampleSam" version="1.106.2">
+    <!-- found on https://bitbucket.org/bwlang/galaxy-dist/src/ca5ded2e18a9ef802c31429e3cb861e8775b24d0/tools/picard/picard_DownsampleSam.xml -->
+   <description>Down-sample a file to retain a subset of the reads</description>
+   <requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  <command interpreter="python">
+    picard_wrapper.py
+      --input "$inputFile"
+      --output "$outFile"
+      --probability=$probability
+      --output-format $outputFormat
+      --seed=$seed
+      -j "\$JAVA_JAR_PATH/DownsampleSam.jar"
+  </command>
+  <inputs>
+    <param format="sam,bam" name="inputFile" type="data" label="SAM/BAM dataset to be downsampled"
+           help="If empty, upload or import a SAM or BAM dataset." />
+    <param name="probability" type="float" size="5" label="Probability (between 0 and 1) that any given read will be kept" help="specify 1 to keep all reads, 0.1 to keep 10% of the reads" value="1" />
+    <param name="seed" type="integer" size="5" label="Random seed value" help="(same seed + same probability = same set of reads kept)" value="1" />
+    <param name="outputFormat" type="boolean" checked="True" truevalue="bam" falsevalue="sam" label="Output BAM instead of SAM" help="Uncheck for SAM output" />
+  </inputs>
+  <outputs>
+    <data name="outFile" format="bam" label="${tool.name} on ${on_string}: downsampled ${outputFormat}">
+      <change_format>
+        <when input="outputFormat" value="sam" format="sam" />
+      </change_format>
+    </data>
+  </outputs>
+ 
+  <tests>
+    <test>
+      <param name="inputFile" value="cleansamtestinput.sam"  ftype="sam" />
+      <param name="probability" value="0.1" />
+      <param name="seed" value="2" />
+      <param name="outputFormat" value="False" />
+      <output name="outFile" file="downsamplesamoutput.sam" ftype="sam" />
+    </test>
+  </tests>
+  <help>
+
+.. class:: infomark
+
+**Purpose**
+
+Randomly down-sample a SAM or BAM file to retain a random subset of the reads. Mate-pairs are either both kept or both discarded. Reads marked as not primary alignments are all discarded. Each read is given a probability P of being retained - results with the exact same input in the same order and with the same value for RANDOM_SEED will produce the same results.
+
+**Picard documentation**
+
+This is a Galaxy wrapper for DownsampleSam, a part of the external package Picard-tools_.
+
+ .. _Picard-tools: http://www.google.com/search?q=picard+samtools
+
+------
+
+.. class:: warningmark
+
+**Warning on SAM/BAM quality**
+
+Many SAM/BAM files produced externally and uploaded to Galaxy do not fully conform to SAM/BAM specifications. Galaxy deals with this by using the **LENIENT**
+flag when it runs Picard, which allows reads to be discarded if they're empty or don't map. This appears
+to be the only way to deal with SAM/BAM that cannot be parsed.
+
+
+  </help>
+</tool>

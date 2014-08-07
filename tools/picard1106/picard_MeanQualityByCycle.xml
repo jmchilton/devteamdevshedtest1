@@ -1,0 +1,57 @@
+<tool name="MeanQualityByCycle" id="picard_MeanQualityByCycle" version="1.106.0">
+<description>Calculates mean quality by cycle</description>
+<requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  <command interpreter="python">
+      picard_wrapper.py -i "${input_file}" -d "${html_file.files_path}" -t "${html_file}"
+    -n "${out_prefix}" --tmpdir "${__new_file_path__}" --assumesorted ${ASSUME_SORTED}
+    --pfreadsonly ${PF_READS_ONLY} --alignedreadsonly ${ALIGNED_READS_ONLY}
+    -j "\$JAVA_JAR_PATH/MeanQualityByCycle.jar"
+  </command>
+   
+  <stdio>
+    <exit_code range="0" level="warning" description="Tool finished correctly" />
+  </stdio>
+   
+  <inputs>
+      <param format="sam,bam" name="input_file" type="data" label="Input SAM or BAM file. Required." help="" />
+      <param checked="False" truevalue="true" falsevalue="false" name="ALIGNED_READS_ONLY" type="boolean" label="If set to true, calculate mean quality over aligned reads only." help="" />
+      <param checked="False" truevalue="true" falsevalue="false" name="PF_READS_ONLY" type="boolean" label="If set to true calculate mean quality over PF reads only." help="" />
+      <param  checked="True" truevalue="true" falsevalue="false" name="ASSUME_SORTED" type="boolean" label="If true (default), then the sort order in the header file will be ignored." />
+      <param name="out_prefix" value="Mean quality by cycle" type="text"
+      label="Title for the output file" help="Use this remind you what the job was for." size="80" />
+  </inputs>
+  <outputs>
+		<data format="html" name="html_file"  label="${out_prefix}.html"/>
+  </outputs>
+  <tests>
+  <test>
+     <!-- Here is a command line that works:
+        java -jar ...
+     -->
+     <!--
+      <param name="inputFile" value="XXCHANGEMEE-input" />
+      <output name="outFile" file="XXCHANGEMEE-correct-output" lines_diff="2" ftype="XXCHANGEMEE" />
+        -->
+    </test>
+  </tests>
+  <help>
+Picard documentation says:
+ 
+  
+MeanQualityByCycle
+
+Usage: program [options...]
+
+Option	Description
+CHART_OUTPUT=File	A file (with .pdf extension) to write the chart to. Required.
+ALIGNED_READS_ONLY=Boolean	If set to true, calculate mean quality over aligned reads only. Default value: false. This option can be set to 'null' to clear the default value. Possible values: {true, false}
+PF_READS_ONLY=Boolean	If set to true calculate mean quality over PF reads only. Default value: false. This option can be set to 'null' to clear the default value. Possible values: {true, false}
+INPUT=File	Input SAM or BAM file. Required.
+OUTPUT=File	File to write the output to. Required.
+REFERENCE_SEQUENCE=File	Reference sequence fasta Default value: null. // Actually, this does not seem to be used anywhere in the tool -- so we removed it
+ASSUME_SORTED=Boolean	If true (default), then the sort order in the header file will be ignored. Default value: true. This option can be set to 'null' to clear the default value. Possible values: {true, false}
+STOP_AFTER=Long	Stop after processing N reads, mainly for debugging. Default value: 0. This option can be set to 'null' to clear the default value. 
+
+ 
+  </help>
+</tool>

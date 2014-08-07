@@ -1,0 +1,55 @@
+<tool name="NormalizeFasta" id="picard_NormalizeFasta" version="1.106.0">
+<description>Takes any file that conforms to the fasta format and normalizes it.</description>
+<requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  <command interpreter="bash">
+      normalizefasta_wrapper.sh NormalizeFasta.jar
+
+              ${input}
+              OUTPUT="${output1}"
+          #if str( $LINE_LENGTH ):
+              LINE_LENGTH="${LINE_LENGTH}"
+          #end if
+          #if str( $TRUNCATE_SEQUENCE_NAMES_AT_WHITESPACE ):
+              TRUNCATE_SEQUENCE_NAMES_AT_WHITESPACE="${TRUNCATE_SEQUENCE_NAMES_AT_WHITESPACE}"
+          #end if
+
+      VALIDATION_STRINGENCY=LENIENT
+      QUIET=True
+      TMP_DIR="${__new_file_path__}" 
+  </command>
+   
+  <inputs>
+      <param format="fasta" name="input" type="data" label="The input fasta file. Required." help="" />
+       <param name="title" label="Name for the output fasta file" type="text" default="normalized_fasta" />
+      <param name="LINE_LENGTH" type="integer" value="100" label="The line length to be used for the output fasta file. Default value: 100. This option can be set to 'null' to clear the default value." help="" />
+      <param name="TRUNCATE_SEQUENCE_NAMES_AT_WHITESPACE" type="boolean" label="Truncate sequence names at first whitespace. Default value: false. This option can be set to 'null' to clear the default value. Possible values: {true, false}" help="" />
+  </inputs>
+  <outputs>
+    <data format="fasta" name="output1" label="${title}.fasta" >
+    </data>
+  </outputs>
+ <!-- <tests>
+  <test> -->
+     <!-- Here is a command line that works:
+        java -jar ...
+     -->
+ <!--     <param name="inputFile" value="XXCHANGEMEE-input" />
+      <output name="outFile" file="XXCHANGEMEE-correct-output" lines_diff="2" ftype="XXCHANGEMEE" />
+    </test>
+  </tests> -->
+  <help>
+Picard documentation says:
+
+  
+NormalizeFasta
+
+Takes any file that conforms to the fasta format and normalizes it so that all lines of sequence except the last line per named sequence are of the same length.
+Option	Description
+INPUT=File	The input fasta file to normalize. Required.
+OUTPUT=File	The output fasta file to write. Required.
+LINE_LENGTH=Integer	The line length to be used for the output fasta file. Default value: 100. This option can be set to 'null' to clear the default value.
+TRUNCATE_SEQUENCE_NAMES_AT_WHITESPACE=Boolean	Truncate sequence names at first whitespace. Default value: false. This option can be set to 'null' to clear the default value. Possible values: {true, false} 
+
+
+  </help>
+</tool>

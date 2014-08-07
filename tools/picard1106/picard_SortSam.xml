@@ -1,0 +1,50 @@
+<tool name="Sort Sam" id="picard_SortSam" version="1.106.0">
+<!-- adapted from https://github.com/najoshi/ucd-biocore-galaxy/blob/master/tools/picard/picard_SortSam.xml -->
+<!-- warning: the sam format output doesn't work. TODO: fix it -->
+  <description>Sorts SAM or BAM file</description> 
+  <requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  <command interpreter="python">
+    picard_wrapper.py
+      --input "$inputFile"
+      -s "$sort_order"
+      -o "$outFile"
+      --output-format $outputFormat
+      -j "\$JAVA_JAR_PATH/SortSam.jar"
+  </command>
+  <inputs>
+    <param format="bam,sam" name="inputFile" type="data" label="SAM/BAM dataset to be sorted"
+      help="If empty, upload or import a SAM/BAM dataset." />
+    <param name="sort_order" type="select" label="Sort order">
+      <option value="coordinate" selected="True">coordinate</option>
+      <option value="queryname">queryname</option>
+      <option value="unsorted">unsorted</option>
+    </param>
+    <param name="outputFormat" type="boolean" checked="True" truevalue="bam" falsevalue="sam" label="Output BAM instead of SAM" help="Uncheck for SAM output" />
+  </inputs>
+  <outputs>
+    <data name="outFile" format="bam" label="${tool.name} on ${on_string}: ${outputFormat}" />
+      <change_format>
+        <when input="outputFormat" value="sam" format="sam" />
+      </change_format>
+  </outputs>
+ <help>
+
+SortSam
+
+USAGE: SortSam [options]
+
+Documentation: http://picard.sourceforge.net/command-line-overview.shtml#SortSam
+
+Sorts the input SAM or BAM.
+
+Input and output formats are determined by file extension.
+Option	Description
+INPUT=File	The BAM or SAM file to sort. Required.
+OUTPUT=File	The sorted BAM or SAM output file. Required.
+SORT_ORDER=SortOrder	Sort order of output file Required. Possible values: {unsorted, queryname, coordinate} 
+  </help>
+</tool>
+
+
+
+

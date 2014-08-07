@@ -1,0 +1,51 @@
+<tool id="picard_mergevcfs" name="Merge Vcfs files" version="1.106.0">
+    <!-- Documentation: http://picard.sourceforge.net/command-line-overview.shtml#MergeVcfs
+-->
+  <description>Merges multiple VCF files into one VCF file. </description>
+  
+  <requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  
+  <command interpreter="bash">
+  mergevcf_wrapper.sh $output1 $input1 $input2
+      #for $i in $inputs
+        ${i.input}
+      #end for 
+  </command>
+  
+  <inputs>
+    <param name="title" label="Name for the output merged vcf file" type="text" default="Merged.vcf"
+       help="This name will appear in your history so use it to remember what the new file in your history contains" >
+    </param>
+    <!-- bcf not implemented -->
+    <!--<param name="outformat" type="select" label="Output format" >
+      <option value="vcf" selected="True">VCF</option>
+      <option value="bcf">BCF</option>
+    </param>-->
+    <param name="input1" label="First file" type="data" format="vcf,bcf" />
+    <param name="input2" label="with file" type="data" format="vcf,bcf" help="Need to add more files? Use controls below." />
+    <repeat name="inputs" title="Input Files">
+      <param name="input" label="Add file" type="data" format="vcf,bcf" />
+    </repeat>
+  </inputs>
+  <outputs>
+    <data format="vcf" name="output1" label="${title}.vcf" >
+    </data>
+  </outputs>
+  <tests>
+    <test>
+      <param name="title" value="test1" />
+      <param name="input1" value="vcfFormatTest.vcf" ftype="vcf" /> 
+      <param name="input2" value="vcfFormatTest.vcf" ftype="vcf" /> 
+      <output name="output1" file="mergevcf_output.vcf" ftype="vcf" />
+    </test>
+    </tests>
+  <help>
+
+**What it does**
+
+Merges multiple VCF into one VCF file. Input files must be sorted by their contigs and, within contigs, by start position. The input files must have the same sample and contig lists. An index file is created and a sequence dictionary is required by default.
+
+.. _Picard: http://picard.sourceforge.net/command-line-overview.shtml#MergeVcfs
+
+  </help>
+</tool>

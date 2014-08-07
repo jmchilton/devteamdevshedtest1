@@ -1,0 +1,19 @@
+@HD	VN:1.4	SO:coordinate
+@SQ	SN:chr1	LN:101	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:bd01f7e11515bb6beda8f7257902aa67
+@SQ	SN:chr2	LN:101	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:31c33e2155b3de5e2554b693c475b310
+@SQ	SN:chr3	LN:101	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:631593c6dd2048ae88dcce2bd505d295
+@SQ	SN:chr4	LN:101	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:c60cb92f1ee5b78053c92bdbfa19abf1
+@SQ	SN:chr5	LN:101	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:07ebc213c7611db0eacbb1590c3e9bda
+@SQ	SN:chr6	LN:101	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:7be2f5e7ee39e60a6c3b5b6a41178c6d
+@SQ	SN:chr7	LN:404	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:da488fc432cdaf2c20c96da473a7b630
+@SQ	SN:chr8	LN:202	UR:file:/home/dorine/galaxypicard/galaxy-central/database/files/000/dataset_207.dat.fasta	M5:d339678efce576d5546e88b49a487b63
+@RG	ID:0	SM:Hi,Mom!
+@PG	ID:1	PN:Hey!	VN:2.0
+both_reads_present_only_first_aligns	165	chr7	1	0	*	=	1	0	NCGCGGCATCNCGATTTCTTTCCGCAGCTAACCTCCCGACAGATCGGCAGCGCGTCGTGTAGGTTATTATGGTACATCTTGTCGTGCGGCNAGAGCATACA	&/15445666651/566666553+2/14/&/555512+3/)-'/-&-'*+))*''13+3)'//++''/'))/3+&*5++)&'2+&+/*&-&&*)&-./1'1	PG:Z:1	RG:Z:0
+read_2_too_many_gaps	165	chr7	1	0	*	=	1	0	NCGCGGCATCNCGATTTCTTTCCGCAGCTAACCTCCCGACAGATCGGCAGCGCGTCGTGTAGGTTATTATGGTACATCTTGTCGTGCGGCNAGAGCATACA	&/15445666651/566666553+2/14/&/555512+3/)-'/-&-'*+))*''13+3)'//++''/'))/3+&*5++)&'2+&+/*&-&&*)&-./1'1	PG:Z:1	RG:Z:0
+both_reads_present_only_first_aligns	89	chr7	1	255	101M	=	1	0	NTTGGGAGGTNAGCTGCGGAANGAAATCGGGATNNNNNNNNGANNCGANAANCNNTTCAGCAGGAAATCCGAAACACAAACACAGATNCCNGCTTCTGTTG	&/86863//382/2/*0*/6/&&06410,/23/&&&&&&&&*0&&&)-&&.&,&&*.).,./.)..&&-/,)&)&)-.&)-*&-)/*&'&&)),2+.*.')	PG:Z:1	RG:Z:0	NM:i:81	UQ:i:838
+read_2_too_many_gaps	89	chr7	1	255	101M	=	1	0	NTTGGGAGGTNAGCTGCGGAANGAAATCGGGATNNNNNNNNGANNCGANAANCNNTTCAGCAGGAAATCCGAAACACAAACACAGATNCCNGCTTCTGTTG	&/86863//382/2/*0*/6/&&06410,/23/&&&&&&&&*0&&&)-&&.&,&&*.).,./.)..&&-/,)&)&)-.&)-*&-)/*&'&&)),2+.*.')	PG:Z:1	RG:Z:0	NM:i:81	UQ:i:838
+both_reads_align_clip_marked	81	chr7	6	255	5S96M	=	302	202	NTTGGGAGGTNAGCTGCGGAANGAAATCGGGATNNNNNNNNGANNCGANAANCNNTTCAGCAGGAAATCCGAAACACAAACACAGATNCCNGCTTCTGTTG	&/86863//382/2/*0*/6/&&06410,/23/&&&&&&&&*0&&&)-&&.&,&&*.).,./.)..&&-/,)&)&)-.&)-*&-)/*&'&&)),2+.*.')	PG:Z:1	RG:Z:0	NM:i:76	MQ:i:255	UQ:i:752	XT:i:97
+both_reads_align_clip_adapter	99	chr7	21	255	96M5S	=	21	96	CAACAGAAGCNGGNATCTGTGTTTGTGTTTCGGATTTCCTGCTGAANNGNTTNTCGNNTCNNNNNNNNATCCCGATTTCNTTCCGCAGCTNACCTCCCAAN	)'.*.+2,))&&'&*/)-&*-)&.-)&)&),/-&&..)./.,.).*&&,&.&&-)&&&0*&&&&&&&&/32/,01460&&/6/*0*/2/283//36868/&	PG:Z:1	RG:Z:0	NM:i:72	MQ:i:255	UQ:i:725
+both_reads_align_clip_adapter	147	chr7	21	255	5S96M	=	21	-96	TGTATGCTCTNGCCGCACGACAAGATGTACCATAATAACCTACACGACGCGCTGCCGATCTGTCGGGAGGTTAGCTGCGGAAAGAAATCGNGATGCCGCGN	1'1/.-&)*&&-&*/+&+2'&)++5*&+3/))'/''++//')3+31''*))+*'-&-/'-)/3+215555/&/41/2+355666665/15666654451/&	PG:Z:1	RG:Z:0	NM:i:64	MQ:i:255	UQ:i:824
+both_reads_align_clip_marked	161	chr7	302	255	96M5S	=	6	-202	NCGCGGCATCNCGATTTCTTTCCGCAGCTAACCTCCCGACAGATCGGCAGCGCGTCGTGTAGGTTATTATGGTACATCTTGTCGTGCGGCNAGAGCATACA	&/15445666651/566666553+2/14/&/555512+3/)-'/-&-'*+))*''13+3)'//++''/'))/3+&*5++)&'2+&+/*&-&&*)&-./1'1	PG:Z:1	RG:Z:0	NM:i:63	MQ:i:255	UQ:i:818	XT:i:97

@@ -1,0 +1,36 @@
+<tool id="picard_cleansam" name="CleanSam" version="1.106.0">
+    <!-- Documentation: http://picard.sourceforge.net/command-line-overview.shtml#CleanSam
+Read SAM and perform various fix-ups. Currently, the only fix-ups are 1: to soft-clip an alignment that hangs off the end of its reference sequence; and 2: to set MAPQ to 0 if a read is unmapped.
+-->
+  <description>Read SAM and perform various fix-ups.</description>
+  
+  <requirements><requirement type="package" version="1.106.0">picard</requirement></requirements>
+  
+  <command interpreter="bash">
+    cleansamwrapper.sh $input1 $output1
+  </command>
+  
+  <inputs>
+    <param name="input1" type="data" format="sam" label="SAM File to clean" />
+  </inputs>
+  
+  <outputs>
+    <data name="output1" format_source="input1" label="${tool.name} on ${on_string}: ${input1.datatype.file_ext}">
+    </data>
+  </outputs>
+  
+  <tests>
+    <test>
+      <param name="input1" value="cleansamtestinput.sam" />
+      <output name="output1" file="cleansamtestoutput.sam" ftype="sam" />
+    </test>
+  </tests>
+  
+  <help>
+
+**What it does**
+
+Read SAM and perform various fix-ups. Currently, the only fix-up it to soft-clip an alignment that hangs off the end of its reference sequence.
+
+  </help>
+</tool>
