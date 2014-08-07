@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="bx-python" version="0.7.1">
+      <repository changeset_revision="35e2457234ef" name="package_bx_python_0_7" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+  <package name="galaxy-ops" version="1.0.0">
+      <repository changeset_revision="3287c55c02b8" name="package_galaxy_ops_1_0_0" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
