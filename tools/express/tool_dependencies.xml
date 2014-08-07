@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="eXpress" version="1.1.1">
+      <repository changeset_revision="c44aad2e4e58" name="package_express_1_1_1" owner="devteam" prior_installation_required="False" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
