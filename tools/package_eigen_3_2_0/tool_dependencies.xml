@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<tool_dependency>
+    <package name="eigen" version="3.2.0">
+        <install version="1.0">
+            <actions>
+                <action type="download_by_url" target_filename="eigen-eigen-ffa86ffb5570.tar.bz2">http://bitbucket.org/eigen/eigen/get/3.2.0.tar.bz2</action>
+                <action type="move_directory_files">
+                    <source_directory>./Eigen</source_directory>
+                    <destination_directory>$INSTALL_DIR/include/Eigen</destination_directory>
+                </action>
+                <action type="set_environment">
+                    <environment_variable name="EIGEN_ROOT" action="set_to">$INSTALL_DIR</environment_variable>
+                </action>
+            </actions>
+        </install>
+        <readme>
+        </readme>
+    </package>
+</tool_dependency>
