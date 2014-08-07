@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <package name="galaxy_sequence_utils" version="1.0.0">
+      <repository changeset_revision="195699b1562a" name="package_galaxy_utils_1_0" owner="devteam" toolshed="https://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
