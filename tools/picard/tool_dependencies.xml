@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tool_dependency>
+    <package name="picard" version="1.56.0">
+        <repository changeset_revision="7206dbf34dcd" name="package_picard_1_56_0" owner="devteam" toolshed="http://testtoolshed.g2.bx.psu.edu" />
+    </package>
+</tool_dependency>
